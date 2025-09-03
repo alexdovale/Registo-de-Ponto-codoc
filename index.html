@@ -142,7 +142,15 @@
         
         // Configuração e inicialização do Firebase
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+  apiKey: "AIzaSyB-NyYBK93RQBJZltleuZs5CQF9Yiw_5ik",
+  authDomain: "folha-de-ponto-codoc.firebaseapp.com",
+  projectId: "folha-de-ponto-codoc",
+  storageBucket: "folha-de-ponto-codoc.firebasestorage.app",
+  messagingSenderId: "960735555250",
+  appId: "1:960735555250:web:cd01a9edbdc270bf3563ab",
+  measurementId: "G-T5C9LLP2CQ"
+};
 
         let app, auth, db;
         try {
@@ -446,4 +454,5 @@
     </script>
 </body>
 </html>
+
 
