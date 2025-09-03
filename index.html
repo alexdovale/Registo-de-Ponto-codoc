@@ -10,9 +10,43 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+        .modal {
+            display: none; /* Oculto por padrão */
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 24px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen py-12">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen py-12 px-4">
 
     <!-- Tela de Login -->
     <div id="login-screen" class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
@@ -20,18 +54,15 @@
             <h2 class="text-center text-3xl font-extrabold text-gray-900">
                 Acessar Ponto Eletrônico
             </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
-                Utilize suas credenciais para continuar.
-            </p>
         </div>
         <form id="login-form" class="space-y-6" onsubmit="return false;">
             <div>
                 <label for="email" class="sr-only">Email</label>
-                <input id="email" name="email" type="email" autocomplete="email" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Seu e-mail">
+                <input id="email" name="email" type="email" autocomplete="email" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Seu e-mail">
             </div>
             <div>
                 <label for="password" class="sr-only">Senha</label>
-                <input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Sua senha">
+                <input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Sua senha">
             </div>
             <p id="login-error" class="text-sm text-red-600"></p>
             <div>
@@ -39,78 +70,122 @@
                     Entrar
                 </button>
             </div>
+             <div class="text-sm text-center">
+                <a href="#" id="forgot-password-link" class="font-medium text-indigo-600 hover:text-indigo-500">
+                    Esqueceu sua senha?
+                </a>
+            </div>
         </form>
+         <div class="relative my-4">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+                <span class="px-2 bg-white text-gray-500">Ou continue com</span>
+            </div>
+        </div>
+        <div>
+            <button id="google-signin-button" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                <span class="sr-only">Entrar com Google</span>
+                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691c-1.219 2.22-1.928 4.793-1.928 7.643s.709 5.423 1.928 7.643l-5.644 4.135C.598 30.493 0 27.352 0 24s.598-6.493 1.662-9.468l5.644 4.159z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C44.438 36.338 48 30.656 48 24c0-2.009-.286-3.943-.811-5.75L43.611 20.083z"/></svg>
+                <span class="ml-3">Google</span>
+            </button>
+        </div>
     </div>
 
     <!-- Tela Principal do Ponto -->
-    <div id="app-screen" class="hidden w-full max-w-4xl p-8 space-y-6 bg-white rounded-lg shadow-md">
+    <div id="app-screen" class="hidden w-full max-w-6xl p-4 sm:p-8 space-y-6 bg-white rounded-lg shadow-md">
         <div class="flex flex-wrap justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Olá, <span id="user-name"></span>!</h1>
-                <p class="text-gray-600">Bem-vindo(a) ao seu registro de ponto.</p>
+                <p id="header-date" class="text-gray-600"></p>
             </div>
             <button id="logout-button" class="px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-100 rounded-md hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 Sair
             </button>
         </div>
 
-        <div class="text-center">
-            <p class="text-lg font-medium text-gray-700">Data de hoje: <span id="current-date"></span></p>
-            <p id="current-time" class="text-5xl font-bold text-gray-900 mt-2"></p>
+        <div class="text-center p-4 bg-gray-50 rounded-lg">
+             <p class="text-sm font-medium text-gray-500">SALDO GERAL DE HORAS</p>
+             <p id="accumulated-balance" class="text-3xl font-bold text-gray-800">--:--:--</p>
         </div>
-
-        <div class="flex justify-center flex-wrap space-x-4">
-            <button id="clock-in-button" class="w-48 py-3 px-6 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400">
-                Registrar Entrada
-            </button>
-            <button id="clock-out-button" class="w-48 py-3 px-6 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-gray-400">
-                Registrar Saída
-            </button>
-        </div>
-
-        <!-- Painel de Resumo do Dia -->
-        <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <h3 class="text-lg font-medium leading-6 text-gray-900 text-center mb-4">Resumo do Dia</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Jornada Prevista</p>
-                    <p id="workday-goal" class="text-xl font-bold text-gray-800">06:00:00</p>
+        
+        <div class="grid md:grid-cols-2 gap-6 items-center">
+            <div class="text-center">
+                <p id="current-time" class="text-5xl sm:text-6xl font-bold text-gray-900"></p>
+                 <div class="flex justify-center flex-wrap gap-4 mt-4">
+                    <button id="clock-in-button" class="w-40 py-3 px-4 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400">
+                        Registrar Entrada
+                    </button>
+                    <button id="clock-out-button" class="w-40 py-3 px-4 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-gray-400">
+                        Registrar Saída
+                    </button>
                 </div>
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Total Trabalhado</p>
-                    <p id="total-worked" class="text-xl font-bold text-gray-800">00:00:00</p>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Saldo do Dia</p>
-                    <p id="daily-balance" class="text-xl font-bold">---</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 text-center mb-4">Resumo do Dia</h3>
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Jornada</p>
+                        <p class="text-lg sm:text-xl font-bold text-gray-800">06:00:00</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Trabalhado</p>
+                        <p id="total-worked" class="text-lg sm:text-xl font-bold text-gray-800">00:00:00</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Saldo</p>
+                        <p id="daily-balance" class="text-lg sm:text-xl font-bold">---</p>
+                    </div>
                 </div>
             </div>
         </div>
-
+        
         <div>
-            <h3 class="text-lg font-medium leading-6 text-gray-900">Seus registros de hoje</h3>
-            <div id="time-entries-table" class="mt-4 border-t border-gray-200">
-                <div class="bg-gray-50 grid grid-cols-3 gap-4 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div>Tipo</div>
-                    <div>Horário</div>
-                    <div>Data</div>
-                </div>
-                <ul id="time-entries-list" class="divide-y divide-gray-200">
-                    <!-- Registros serão inseridos aqui -->
-                </ul>
-                 <p id="no-entries-message" class="text-center py-4 text-gray-500 hidden">Nenhum registro encontrado para hoje.</p>
+            <h3 class="text-lg font-medium leading-6 text-gray-900">Histórico de Registros</h3>
+            <div class="mt-4 overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entradas</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Saídas</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Saldo do Dia</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body" class="bg-white divide-y divide-gray-200">
+                        <!-- Linhas da tabela serão inseridas aqui via JavaScript -->
+                    </tbody>
+                </table>
+                <p id="no-history-message" class="text-center py-4 text-gray-500 hidden">Nenhum registro encontrado.</p>
             </div>
         </div>
     </div>
 
+    <!-- Modal de Redefinir Senha -->
+    <div id="forgot-password-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-modal-button" class="close-button">&times;</span>
+            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Redefinir Senha</h3>
+            <p class="text-sm text-gray-600 mb-4">Digite seu e-mail e enviaremos um link para você redefinir sua senha.</p>
+            <form id="forgot-password-form" onsubmit="return false;">
+                <input id="forgot-email" type="email" required placeholder="Seu e-mail" class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <button type="submit" class="mt-4 group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Enviar Link</button>
+            </form>
+            <p id="modal-message" class="text-sm mt-4 text-center"></p>
+        </div>
+    </div>
+
     <script type="module">
-        // Importações do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { 
             getAuth, 
             signInWithEmailAndPassword, 
             signOut, 
-            onAuthStateChanged, 
+            onAuthStateChanged,
+            GoogleAuthProvider,
+            signInWithPopup,
+            sendPasswordResetEmail,
             signInAnonymously, 
             signInWithCustomToken 
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -119,38 +194,32 @@
             collection, 
             addDoc, 
             query, 
-            where, 
             onSnapshot,
             doc,
             getDoc,
+            setDoc,
             Timestamp,
             setLogLevel
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- INSTRUÇÕES DE CONFIGURAÇÃO DO FIREBASE ---
         // 1. Crie um projeto no Firebase em https://console.firebase.google.com/
-        // 2. Na seção "Authentication", habilite o provedor "E-mail/senha".
-        // 3. Crie usuários na aba "Users" da Authentication. Por exemplo, "joao.silva@example.com" com a senha "senha123".
-        // 4. Na seção "Firestore Database", crie um banco de dados.
-        // 5. Crie uma coleção chamada "users".
-        // 6. Para cada usuário criado na Authentication, adicione um documento na coleção "users".
-        //    O ID do documento DEVE SER o mesmo "User UID" do usuário na Authentication.
-        //    Dentro do documento, crie um campo "name" (string) com o nome completo do usuário.
-        //    Exemplo: Documento com ID "Abc123xyz..." -> Campo: name, Valor: "João da Silva"
-        // 7. Cole o objeto de configuração do seu projeto Firebase na variável `__firebase_config` no ambiente de desenvolvimento.
+        // 2. Habilite os provedores "E-mail/senha" e "Google" em Authentication > Sign-in method.
+        // 3. Crie usuários de E-mail/senha na aba "Users".
+        // 4. No Firestore, crie a coleção "users". Para cada usuário, crie um documento com o UID dele.
+        //    Dentro do documento, adicione um campo "name" com o nome completo.
         // --- FIM DAS INSTRUÇÕES ---
         
-        // Configuração e inicialização do Firebase
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-  apiKey: "AIzaSyBqWlyh2vo0I_gRWysG2NYdz0gvopRO3SI",
-  authDomain: "sistema-ponto-v2.firebaseapp.com",
-  projectId: "sistema-ponto-v2",
-  storageBucket: "sistema-ponto-v2.firebasestorage.app",
-  messagingSenderId: "582643132528",
-  appId: "1:582643132528:web:2d489ae3c23786152a2cb5",
-  measurementId: "G-E1SLMCBYZV"
-};
+            apiKey: "AIzaSyBqWlyh2vo0I_gRWysG2NYdz0gvopRO3SI",
+            authDomain: "sistema-ponto-v2.firebaseapp.com",
+            projectId: "sistema-ponto-v2",
+            storageBucket: "sistema-ponto-v2.firebasestorage.app",
+            messagingSenderId: "582643132528",
+            appId: "1:582643132528:web:2d489ae3c23786152a2cb5",
+            measurementId: "G-E1SLMCBYZV"
+        };
 
         let app, auth, db;
         try {
@@ -163,7 +232,6 @@
             document.body.innerHTML = '<div class="text-red-500 text-center p-8">Erro de configuração do Firebase. Verifique o console.</div>';
         }
 
-
         // Elementos da UI
         const loginScreen = document.getElementById('login-screen');
         const appScreen = document.getElementById('app-screen');
@@ -171,40 +239,64 @@
         const loginError = document.getElementById('login-error');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
+        const googleSigninButton = document.getElementById('google-signin-button');
+
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
+        const forgotPasswordModal = document.getElementById('forgot-password-modal');
+        const closeModalButton = document.getElementById('close-modal-button');
+        const forgotPasswordForm = document.getElementById('forgot-password-form');
+        const forgotEmailInput = document.getElementById('forgot-email');
+        const modalMessage = document.getElementById('modal-message');
 
         const userNameSpan = document.getElementById('user-name');
         const logoutButton = document.getElementById('logout-button');
         const clockInButton = document.getElementById('clock-in-button');
         const clockOutButton = document.getElementById('clock-out-button');
         
-        const currentDateSpan = document.getElementById('current-date');
+        const headerDateSpan = document.getElementById('header-date');
         const currentTimeSpan = document.getElementById('current-time');
-        const timeEntriesList = document.getElementById('time-entries-list');
-        const noEntriesMessage = document.getElementById('no-entries-message');
-
+        
+        const accumulatedBalanceSpan = document.getElementById('accumulated-balance');
         const totalWorkedSpan = document.getElementById('total-worked');
         const dailyBalanceSpan = document.getElementById('daily-balance');
+        
+        const historyTableBody = document.getElementById('history-table-body');
+        const noHistoryMessage = document.getElementById('no-history-message');
 
-        let unsubscribeFromEntries = null; // Para limpar o listener do onSnapshot ao deslogar
+        let unsubscribeFromEntries = null;
 
-        // Função para formatar data e hora
-        const formatDate = (date) => date.toLocaleDateString('pt-BR');
+        // Funções de Formatação
+        const formatDate = (date) => date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
         const formatTime = (date) => date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit'});
+
+        function formatMilliseconds(ms, allowNegative = false) {
+            const isNegative = ms < 0;
+            if (isNegative && !allowNegative) ms = 0;
+            
+            const totalSeconds = Math.floor(Math.abs(ms) / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            const timeString = [hours, minutes, seconds]
+                .map(v => v.toString().padStart(2, '0'))
+                .join(':');
+            
+            return isNegative ? `- ${timeString}` : timeString;
+        }
 
         // Atualiza o relógio na tela
         function updateClock() {
             const now = new Date();
-            currentDateSpan.textContent = formatDate(now);
+            headerDateSpan.textContent = now.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             currentTimeSpan.textContent = formatTime(now);
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-
         // Gerenciamento de estado de autenticação
         onAuthStateChanged(auth, async (user) => {
             if (user && !user.isAnonymous) {
-                // Usuário está logado
                 loginScreen.classList.add('hidden');
                 appScreen.classList.remove('hidden');
                 
@@ -212,203 +304,186 @@
                 listenToTimeEntries(user);
 
             } else {
-                // Usuário não está logado ou é anônimo
                 loginScreen.classList.remove('hidden');
                 appScreen.classList.add('hidden');
-                userNameSpan.textContent = '';
                 if(unsubscribeFromEntries) {
-                    unsubscribeFromEntries(); // Limpa o listener anterior
+                    unsubscribeFromEntries();
                 }
             }
         });
-        
-        // Autenticação inicial
-        (async () => {
-             if (auth) {
-                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    try {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } catch (error) {
-                        console.error("Falha ao entrar com token customizado:", error);
-                        await signInAnonymously(auth);
-                    }
-                } else {
-                   // Se não houver token, o onAuthStateChanged cuidará de mostrar a tela de login.
-                }
-             }
-        })();
 
-
-        // Função para buscar dados do usuário (nome)
         async function fetchUserData(user) {
             if (!user) return;
-            try {
-                const userDocRef = doc(db, "users", user.uid);
-                const userDocSnap = await getDoc(userDocRef);
+            const userDocRef = doc(db, "users", user.uid);
+            const userDocSnap = await getDoc(userDocRef);
 
-                if (userDocSnap.exists()) {
-                    userNameSpan.textContent = userDocSnap.data().name;
+            if (userDocSnap.exists()) {
+                userNameSpan.textContent = userDocSnap.data().name;
+            } else {
+                // Se usuário logou com Google e não tem registro, cria um.
+                if (user.displayName) {
+                    try {
+                        await setDoc(userDocRef, { name: user.displayName });
+                        userNameSpan.textContent = user.displayName;
+                    } catch (e) {
+                        console.error("Erro ao criar documento para novo usuário:", e);
+                        userNameSpan.textContent = user.email;
+                    }
                 } else {
-                    console.warn("Documento do usuário não encontrado no Firestore.");
-                    userNameSpan.textContent = user.email; // Fallback para o email
+                     console.warn("Documento do usuário não encontrado no Firestore.");
+                     userNameSpan.textContent = user.email;
                 }
-            } catch (error) {
-                console.error("Erro ao buscar dados do usuário:", error);
-                userNameSpan.textContent = user.email;
             }
         }
-
-        // Função para escutar os registros de ponto em tempo real
+        
+        // Listener principal para todos os registros
         function listenToTimeEntries(user) {
             if (!user) return;
             
-            const now = new Date();
-            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-            const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-
             const entriesCollectionPath = `/artifacts/${appId}/users/${user.uid}/time_entries`;
-            const q = query(
-                collection(db, entriesCollectionPath),
-                where("timestamp", ">=", Timestamp.fromDate(startOfDay)),
-                where("timestamp", "<=", Timestamp.fromDate(endOfDay))
-            );
+            const q = query(collection(db, entriesCollectionPath));
             
-            if(unsubscribeFromEntries) {
-                unsubscribeFromEntries();
-            }
+            if(unsubscribeFromEntries) unsubscribeFromEntries();
 
             unsubscribeFromEntries = onSnapshot(q, (querySnapshot) => {
                 const entries = [];
                 querySnapshot.forEach((doc) => {
                     entries.push({ id: doc.id, ...doc.data() });
                 });
-
-                // Ordena em memória para evitar a necessidade de índices compostos no Firestore
                 entries.sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
+                
+                const todayEntries = getTodayEntries(entries);
+                updateButtonState(todayEntries);
+                calculateAndDisplayDailyBalance(todayEntries);
+                renderHistoryAndTotalBalance(entries);
 
-                renderTimeEntries(entries);
-                updateButtonState(entries);
-                calculateAndDisplayBalance(entries);
-            }, (error) => {
-                console.error("Erro ao escutar registros de ponto: ", error);
-            });
+            }, (error) => console.error("Erro ao escutar registros: ", error));
         }
-        
-        // Função para renderizar os registros na tela
-        function renderTimeEntries(entries) {
-            timeEntriesList.innerHTML = '';
+
+        const getTodayEntries = (allEntries) => {
+            const now = new Date();
+            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const endOfDay = startOfDay + 24 * 60 * 60 * 1000;
+
+            return allEntries.filter(entry => {
+                const entryTime = entry.timestamp.toMillis();
+                return entryTime >= startOfDay && entryTime < endOfDay;
+            });
+        };
+
+        function renderHistoryAndTotalBalance(entries) {
+            historyTableBody.innerHTML = '';
             if (entries.length === 0) {
-                 noEntriesMessage.classList.remove('hidden');
+                 noHistoryMessage.classList.remove('hidden');
+                 accumulatedBalanceSpan.textContent = '00:00:00';
                  return;
             }
-            noEntriesMessage.classList.add('hidden');
+            noHistoryMessage.classList.add('hidden');
 
-            const reversedEntries = [...entries].reverse();
-            reversedEntries.forEach(entry => {
-                const entryDate = entry.timestamp.toDate();
-                const typeText = entry.type === 'in' ? 'Entrada' : 'Saída';
-                const typeClass = entry.type === 'in' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-
-                const li = document.createElement('li');
-                li.className = 'grid grid-cols-3 gap-4 px-6 py-4 text-sm text-gray-900';
-                li.innerHTML = `
-                    <div>
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${typeClass}">
-                            ${typeText}
-                        </span>
-                    </div>
-                    <div>${formatTime(entryDate)}</div>
-                    <div>${formatDate(entryDate)}</div>
-                `;
-                timeEntriesList.appendChild(li);
-            });
-        }
-        
-        // Atualiza o estado dos botões (habilitado/desabilitado)
-        function updateButtonState(entries) {
-            if (entries.length === 0) {
-                clockInButton.disabled = false;
-                clockOutButton.disabled = true;
-                return;
-            }
-
-            const lastEntry = entries[entries.length - 1];
-            if (lastEntry.type === 'in') {
-                clockInButton.disabled = true;
-                clockOutButton.disabled = false;
-            } else { // 'out'
-                clockInButton.disabled = false;
-                clockOutButton.disabled = true;
-            }
-        }
-
-        function formatMilliseconds(ms) {
-            if (ms < 0) ms = 0;
-            const totalSeconds = Math.floor(ms / 1000);
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-
-            return [hours, minutes, seconds]
-                .map(v => v.toString().padStart(2, '0'))
-                .join(':');
-        }
-
-        function calculateAndDisplayBalance(entries) {
             const WORKDAY_MS = 6 * 60 * 60 * 1000;
             const TOLERANCE_MS = 15 * 60 * 1000;
+            let totalBalanceMs = 0;
 
+            const entriesByDay = entries.reduce((acc, entry) => {
+                const date = formatDate(entry.timestamp.toDate());
+                if (!acc[date]) acc[date] = [];
+                acc[date].push(entry);
+                return acc;
+            }, {});
+
+            const sortedDays = Object.keys(entriesByDay).sort((a, b) => {
+                const dateA = a.split('/').reverse().join('-');
+                const dateB = b.split('/').reverse().join('-');
+                return new Date(dateB) - new Date(dateA);
+            });
+
+            for (const date of sortedDays) {
+                const dayEntries = entriesByDay[date];
+                const ins = dayEntries.filter(e => e.type === 'in').map(e => formatTime(e.timestamp.toDate()));
+                const outs = dayEntries.filter(e => e.type === 'out').map(e => formatTime(e.timestamp.toDate()));
+
+                let dailyWorkedMs = 0;
+                for (let i = 0; i < dayEntries.length - 1; i += 2) {
+                    if (dayEntries[i].type === 'in' && dayEntries[i+1].type === 'out') {
+                        dailyWorkedMs += dayEntries[i+1].timestamp.toMillis() - dayEntries[i].timestamp.toMillis();
+                    }
+                }
+                
+                let dailyBalanceMs = 0;
+                let balanceText = '---';
+                let balanceClass = 'text-gray-700';
+
+                if (dayEntries.length % 2 === 0 && dayEntries.length > 0) {
+                    dailyBalanceMs = dailyWorkedMs - WORKDAY_MS;
+                    if (Math.abs(dailyBalanceMs) <= TOLERANCE_MS) {
+                        balanceText = '00:00:00';
+                    } else {
+                        balanceText = formatMilliseconds(dailyBalanceMs, true);
+                        balanceClass = dailyBalanceMs > 0 ? 'text-green-600' : 'text-red-600';
+                        totalBalanceMs += dailyBalanceMs;
+                    }
+                }
+                
+                const row = `
+                    <tr class="text-sm">
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">${date}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-500">${ins.join(', ')}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-500">${outs.join(', ')}</td>
+                        <td class="px-6 py-4 whitespace-nowrap font-medium ${balanceClass}">${balanceText}</td>
+                    </tr>
+                `;
+                historyTableBody.innerHTML += row;
+            }
+
+            accumulatedBalanceSpan.textContent = formatMilliseconds(totalBalanceMs, true);
+            accumulatedBalanceSpan.className = `text-3xl font-bold ${totalBalanceMs >= 0 ? 'text-green-600' : 'text-red-600'}`;
+        }
+
+        function calculateAndDisplayDailyBalance(entries) {
+            const WORKDAY_MS = 6 * 60 * 60 * 1000;
+            const TOLERANCE_MS = 15 * 60 * 1000;
+            
             let totalMillisecondsWorked = 0;
             for (let i = 0; i < entries.length; i += 2) {
-                const inEntry = entries[i];
-                const outEntry = entries[i + 1];
-
-                if (inEntry && inEntry.type === 'in' && outEntry && outEntry.type === 'out') {
-                    const inTime = inEntry.timestamp.toMillis();
-                    const outTime = outEntry.timestamp.toMillis();
-                    totalMillisecondsWorked += (outTime - inTime);
+                if (entries[i]?.type === 'in' && entries[i+1]?.type === 'out') {
+                    totalMillisecondsWorked += entries[i+1].timestamp.toMillis() - entries[i].timestamp.toMillis();
                 }
             }
             
             totalWorkedSpan.textContent = formatMilliseconds(totalMillisecondsWorked);
-
+            
             if (entries.length % 2 !== 0 || entries.length === 0) {
                  dailyBalanceSpan.textContent = '---';
-                 dailyBalanceSpan.className = 'text-xl font-bold text-gray-800';
+                 dailyBalanceSpan.className = 'text-lg sm:text-xl font-bold text-gray-800';
                  return;
             }
 
             const balanceMs = totalMillisecondsWorked - WORKDAY_MS;
-            
-            let balanceText = '';
-            let balanceClass = 'text-xl font-bold ';
-
             if (Math.abs(balanceMs) <= TOLERANCE_MS) {
-                balanceText = '00:00:00';
-                balanceClass += 'text-gray-800';
-            } else if (balanceMs > TOLERANCE_MS) {
-                balanceText = `+ ${formatMilliseconds(balanceMs)}`;
-                balanceClass += 'text-green-600';
-            } else { 
-                balanceText = `- ${formatMilliseconds(Math.abs(balanceMs))}`;
-                balanceClass += 'text-red-600';
+                dailyBalanceSpan.textContent = '00:00:00';
+                dailyBalanceSpan.className = 'text-lg sm:text-xl font-bold text-gray-800';
+            } else {
+                dailyBalanceSpan.textContent = formatMilliseconds(balanceMs, true);
+                dailyBalanceSpan.className = `text-lg sm:text-xl font-bold ${balanceMs > 0 ? 'text-green-600' : 'text-red-600'}`;
             }
-
-            dailyBalanceSpan.textContent = balanceText;
-            dailyBalanceSpan.className = balanceClass;
         }
-
-
-        // Função para registrar entrada ou saída
+        
+        function updateButtonState(entries) {
+            if (entries.length === 0 || entries[entries.length - 1].type === 'out') {
+                clockInButton.disabled = false;
+                clockOutButton.disabled = true;
+            } else {
+                clockInButton.disabled = true;
+                clockOutButton.disabled = false;
+            }
+        }
+        
         async function recordTime(type) {
             const user = auth.currentUser;
-            if (!user) {
-                console.error("Nenhum usuário logado para registrar o ponto.");
-                return;
-            }
+            if (!user) return;
             
-            const buttonToDisable = type === 'in' ? clockInButton : clockOutButton;
-            buttonToDisable.disabled = true;
+            const button = type === 'in' ? clockInButton : clockOutButton;
+            button.disabled = true;
 
             try {
                 const entriesCollectionPath = `/artifacts/${appId}/users/${user.uid}/time_entries`;
@@ -419,41 +494,67 @@
                 });
             } catch (error) {
                 console.error(`Erro ao registrar ${type}:`, error);
-                buttonToDisable.disabled = false; 
+                button.disabled = false; 
             }
         }
 
-        // Lógica de Login
+        // --- Lógica de Autenticação ---
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             loginError.textContent = '';
-            const email = emailInput.value;
-            const password = passwordInput.value;
-
             try {
-                await signInWithEmailAndPassword(auth, email, password);
+                await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
             } catch (error) {
-                console.error("Erro de login:", error.code, error.message);
-                loginError.textContent = "E-mail ou senha inválidos. Tente novamente.";
+                loginError.textContent = "E-mail ou senha inválidos.";
             }
         });
 
-        // Lógica de Logout
-        logoutButton.addEventListener('click', async () => {
+        googleSigninButton.addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
             try {
-                await signOut(auth);
+                await signInWithPopup(auth, provider);
             } catch (error) {
-                console.error("Erro ao sair:", error);
+                console.error("Erro ao entrar com Google:", error);
+                loginError.textContent = "Não foi possível entrar com o Google.";
             }
         });
+
+        logoutButton.addEventListener('click', () => signOut(auth));
         
-        // Eventos dos botões de ponto
+        // --- Lógica do Modal de Senha ---
+        forgotPasswordLink.addEventListener('click', () => {
+            forgotPasswordModal.style.display = 'flex';
+        });
+        closeModalButton.addEventListener('click', () => {
+            forgotPasswordModal.style.display = 'none';
+            modalMessage.textContent = '';
+            forgotEmailInput.value = '';
+        });
+        window.addEventListener('click', (event) => {
+            if (event.target == forgotPasswordModal) {
+                forgotPasswordModal.style.display = 'none';
+            }
+        });
+
+        forgotPasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = forgotEmailInput.value;
+            modalMessage.textContent = "Enviando...";
+            modalMessage.className = 'text-sm mt-4 text-center text-gray-600';
+            try {
+                await sendPasswordResetEmail(auth, email);
+                modalMessage.textContent = "Link de redefinição enviado para o seu e-mail!";
+                modalMessage.className = 'text-sm mt-4 text-center text-green-600';
+            } catch (error) {
+                 modalMessage.textContent = "Erro ao enviar e-mail. Verifique o endereço digitado.";
+                 modalMessage.className = 'text-sm mt-4 text-center text-red-600';
+            }
+        });
+
         clockInButton.addEventListener('click', () => recordTime('in'));
         clockOutButton.addEventListener('click', () => recordTime('out'));
 
     </script>
 </body>
 </html>
-
-
 
