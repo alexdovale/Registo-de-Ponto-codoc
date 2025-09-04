@@ -228,16 +228,23 @@
             renderHistory(entries, requests);
         }
 
-        function updateButtonState(entries) {
-            const hasOutEntry = entries.some(e => e.type === 'out');
-            if (hasOutEntry) {
+        // Lógica atualizada para permitir apenas uma entrada e uma saída por dia.
+        // Se um registro for apagado pelo admin, os botões são reativados.
+        function updateButtonState(todayEntries) {
+            const hasClockIn = todayEntries.some(e => e.type === 'in');
+            const hasClockOut = todayEntries.some(e => e.type === 'out');
+
+            if (hasClockIn && hasClockOut) {
                 ui.clockInButton.disabled = true;
                 ui.clockOutButton.disabled = true;
                 ui.dailyLimitMessage.classList.remove('hidden');
-            } else {
-                const lastEntry = entries[entries.length - 1];
-                ui.clockInButton.disabled = lastEntry && lastEntry.type === 'in';
-                ui.clockOutButton.disabled = !lastEntry || lastEntry.type === 'out';
+            } else if (hasClockIn) {
+                ui.clockInButton.disabled = true;
+                ui.clockOutButton.disabled = false;
+                ui.dailyLimitMessage.classList.add('hidden');
+            } else { // Sem registros de entrada ou saída, ou apenas entrada apagada.
+                ui.clockInButton.disabled = false;
+                ui.clockOutButton.disabled = true;
                 ui.dailyLimitMessage.classList.add('hidden');
             }
         }
@@ -378,13 +385,18 @@
             const btn = type === 'in' ? ui.clockInButton : ui.clockOutButton; 
             btn.disabled = true; 
 
-            // Verifica se já existe um registro de saída no dia
+            // Verifica se já existe um registro de saída para o dia, se sim, bloqueia
             const entriesQuery = query(collection(db, `/artifacts/${appId}/users/${user.uid}/time_entries`));
             onSnapshot(entriesQuery, (snapshot) => {
                 const todayEntries = snapshot.docs.filter(d => new Date(d.data().timestamp.toDate()).toDateString() === new Date().toDateString());
                 const hasOutEntry = todayEntries.some(e => e.type === 'out');
                 
-                if (hasOutEntry) {
+                if (hasOutEntry && type === 'out') {
+                    btn.disabled = true;
+                    ui.dailyLimitMessage.classList.remove('hidden');
+                    return;
+                }
+                if (hasOutEntry && type === 'in') {
                     btn.disabled = true;
                     ui.dailyLimitMessage.classList.remove('hidden');
                     return;
