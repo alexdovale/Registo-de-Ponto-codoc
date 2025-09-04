@@ -228,8 +228,6 @@
             renderHistory(entries, requests);
         }
 
-        // Lógica atualizada para permitir apenas uma entrada e uma saída por dia.
-        // Se um registro for apagado pelo admin, os botões são reativados.
         function updateButtonState(todayEntries) {
             const hasClockIn = todayEntries.some(e => e.type === 'in');
             const hasClockOut = todayEntries.some(e => e.type === 'out');
@@ -242,7 +240,7 @@
                 ui.clockInButton.disabled = true;
                 ui.clockOutButton.disabled = false;
                 ui.dailyLimitMessage.classList.add('hidden');
-            } else { // Sem registros de entrada ou saída, ou apenas entrada apagada.
+            } else {
                 ui.clockInButton.disabled = false;
                 ui.clockOutButton.disabled = true;
                 ui.dailyLimitMessage.classList.add('hidden');
