@@ -248,24 +248,7 @@
         }
 
         function calculateAndDisplayDailyBalance(entries) {
-            let workedMs = 0;
-            const todayEntries = entries.filter(e => new Date(e.timestamp.toDate()).toDateString() === new Date().toDateString());
-            const todayIns = todayEntries.filter(e => e.type === 'in').map(e => e.timestamp.toMillis());
-            const todayOuts = todayEntries.filter(e => e.type === 'out').map(e => e.timestamp.toMillis());
-
-            for (let i = 0; i < Math.min(todayIns.length, todayOuts.length); i++) {
-                workedMs += todayOuts[i] - todayIns[i];
-            }
-
-            ui.totalWorkedSpan.textContent = formatMilliseconds(workedMs);
-
-            if (todayIns.length > 0 && todayIns.length === todayOuts.length) {
-                const balanceMs = workedMs - (6 * 3600 * 1000);
-                const isTolerated = Math.abs(balanceMs) <= (15 * 60 * 1000);
-                ui.dailyBalanceSpan.textContent = isTolerated ? '00:00:00' : formatMilliseconds(balanceMs, true);
-                ui.dailyBalanceSpan.className = `text-lg sm:text-xl font-bold ${isTolerated ? 'text-gray-800' : balanceMs > 0 ? 'text-green-600' : 'text-red-600'}`;
-            } else {
-                ui.dailyBalanceSpan.textContent = '---';
+// ... existing code ... -->
                 ui.dailyBalanceSpan.className = 'text-lg sm:text-xl font-bold text-gray-800';
             }
         }
@@ -295,6 +278,9 @@
                 const ins = dayEntries.ins.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
                 const outs = dayEntries.outs.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
                 
+                let balanceText = '---';
+                let balanceClass = 'text-yellow-500';
+
                 if (ins.length === outs.length && ins.length > 0) {
                     let dailyWorkedMs = 0;
                     const sortedDayEntries = [...dayEntries.ins, ...dayEntries.outs].sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
@@ -303,27 +289,30 @@
                     }
 
                     const dailyBalanceMs = dailyWorkedMs - (6 * 3600 * 1000);
-                    if (Math.abs(dailyBalanceMs) > (15 * 60 * 1000)) {
+                    const isTolerated = Math.abs(dailyBalanceMs) <= (16 * 60 * 1000);
+
+                    if (!isTolerated) {
                         totalMonthlyBalanceMs += dailyBalanceMs;
                     }
-                    const balanceText = Math.abs(dailyBalanceMs) <= (15 * 60 * 1000) ? '00:00:00' : formatMilliseconds(dailyBalanceMs, true);
-                    const balanceClass = dailyBalanceMs > 0 ? 'text-green-600' : 'text-red-600';
-
-                    const requestForDay = requests.find(r => r.date === date);
-                    let requestIcon = `<svg class="w-6 h-6 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`;
-                    let statusText = '', statusColor = '';
-                    if (requestForDay) {
-                        if(requestForDay.status === 'approved') { statusText = 'Aprovada'; statusColor = 'text-green-500'; }
-                        else if (requestForDay.status === 'declined') { statusText = 'Recusada'; statusColor = 'text-red-500'; }
-                        else { statusText = 'Pendente'; statusColor = 'text-yellow-500'; }
-                        requestIcon = `<svg class="w-6 h-6 ${statusColor}" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>`;
-                    }
                     
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td class="px-6 py-4">${date}</td><td class="px-6 py-4">${ins.join(', ')}</td><td class="px-6 py-4">${outs.join(', ')}</td><td class="px-6 py-4 font-medium ${balanceClass}">${balanceText}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><button class="request-btn cursor-pointer" data-date="${date}">${requestIcon}</button><span class="text-xs font-medium ${statusColor}">${statusText}</span></div></td>`;
-                    row.querySelector('.request-btn').addEventListener('click', () => openRequestModal(date));
-                    ui.historyTableBody.appendChild(row);
+                    balanceText = isTolerated ? '00:00:00' : formatMilliseconds(dailyBalanceMs, true);
+                    balanceClass = isTolerated ? 'text-gray-800' : dailyBalanceMs > 0 ? 'text-green-600' : 'text-red-600';
                 }
+
+                const requestForDay = requests.find(r => r.date === date);
+                let requestIcon = `<svg class="w-6 h-6 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`;
+                let statusText = '', statusColor = '';
+                if (requestForDay) {
+                    if(requestForDay.status === 'approved') { statusText = 'Aprovada'; statusColor = 'text-green-500'; }
+                    else if (requestForDay.status === 'declined') { statusText = 'Recusada'; statusColor = 'text-red-500'; }
+                    else { statusText = 'Pendente'; statusColor = 'text-yellow-500'; }
+                    requestIcon = `<svg class="w-6 h-6 ${statusColor}" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>`;
+                }
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `<td class="px-6 py-4">${date}</td><td class="px-6 py-4">${ins.join(', ')}</td><td class="px-6 py-4">${outs.join(', ')}</td><td class="px-6 py-4 font-medium ${balanceClass}">${balanceText}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><button class="request-btn cursor-pointer" data-date="${date}">${requestIcon}</button><span class="text-xs font-medium ${statusColor}">${statusText}</span></div></td>`;
+                row.querySelector('.request-btn').addEventListener('click', () => openRequestModal(date));
+                ui.historyTableBody.appendChild(row);
             });
 
             if (ui.historyTableBody.children.length === 0) {
@@ -337,73 +326,5 @@
         }
         
         function openRequestModal(date) {
-            currentRequestDate = date;
-            ui.request.title.textContent = `Enviar Solicitação para ${date}`;
-            ui.request.text.value = '';
-            ui.request.msg.textContent = '';
-            ui.request.modal.style.display = 'flex';
-        }
-        
-        async function handleRequestSubmit(e) {
-            e.preventDefault();
-            const user = auth.currentUser;
-            if (!user || !currentRequestDate) return;
+// ... existing code ... -->
 
-            const requestsRef = collection(db, `/artifacts/${appId}/requests`);
-            const q = query(requestsRef, where("userId", "==", user.uid), where("date", "==", currentRequestDate));
-            const existing = await getDocs(q);
-
-            if (!existing.empty) {
-                ui.request.msg.textContent = 'Já existe uma solicitação para esta data.';
-                ui.request.msg.className = 'text-sm mt-4 text-center text-red-600';
-                return;
-            }
-
-            try {
-                await addDoc(requestsRef, { userId: user.uid, userName: ui.userNameSpan.textContent, date: currentRequestDate, text: ui.request.text.value, status: 'pending', createdAt: Timestamp.now() });
-                ui.request.msg.textContent = 'Solicitação enviada com sucesso!';
-                ui.request.msg.className = 'text-sm mt-4 text-center text-green-600';
-                setTimeout(() => ui.request.modal.style.display = 'none', 1500);
-            } catch (error) {
-                ui.request.msg.textContent = 'Erro ao enviar. Tente novamente.';
-                ui.request.msg.className = 'text-sm mt-4 text-center text-red-600';
-            }
-        }
-        
-        // --- Event Listeners ---
-        ui.loginForm.addEventListener('submit', async (e) => { e.preventDefault(); ui.loginError.textContent = ''; try { await signInWithEmailAndPassword(auth, ui.loginForm.email.value, ui.loginForm.password.value); } catch (error) { ui.loginError.textContent = "E-mail ou senha inválidos."; } });
-        ui.logoutButton.addEventListener('click', () => signOut(auth));
-        ui.clockInButton.addEventListener('click', () => recordTime('in'));
-        ui.clockOutButton.addEventListener('click', () => recordTime('out'));
-        ui.forgot.link.addEventListener('click', () => ui.forgot.modal.style.display = 'flex');
-        ui.forgot.close.addEventListener('click', () => ui.forgot.modal.style.display = 'none');
-        ui.request.close.addEventListener('click', () => ui.request.modal.style.display = 'none');
-        ui.request.form.addEventListener('submit', handleRequestSubmit);
-        ui.forgot.form.addEventListener('submit', async (e) => { e.preventDefault(); ui.forgot.msg.textContent = "A enviar..."; try { await sendPasswordResetEmail(auth, ui.forgot.email.value); ui.forgot.msg.textContent = "Link enviado!"; ui.forgot.msg.className = 'text-sm mt-4 text-center text-green-600';} catch (error) { ui.forgot.msg.textContent = "Erro ao enviar e-mail."; ui.forgot.msg.className = 'text-sm mt-4 text-center text-red-600';}});
-        window.onclick = (event) => { if (event.target == ui.forgot.modal) ui.forgot.modal.style.display = "none"; if (event.target == ui.request.modal) ui.request.modal.style.display = "none"; };
-        
-        updateClock();
-        function updateClock() {
-            const now = new Date();
-            ui.currentTimeSpan.textContent = now.toLocaleTimeString('pt-BR');
-            ui.headerDateSpan.textContent = now.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            setTimeout(updateClock, 1000);
-        }
-
-        function recordTime(type) { 
-            if (!isIpAllowed) return; 
-            const user = auth.currentUser; 
-            if (!user) return; 
-            const btn = type === 'in' ? ui.clockInButton : ui.clockOutButton; 
-            btn.disabled = true; 
-
-            addDoc(collection(db, `/artifacts/${appId}/users/${user.uid}/time_entries`), { 
-                type, 
-                timestamp: Timestamp.now(), 
-                userId: user.uid 
-            }).catch(() => btn.disabled = false); 
-        }
-        function formatMilliseconds(ms, neg = false) { const s = ms < 0 ? '-' : ''; if(neg) ms=Math.abs(ms); else if(ms<0) ms=0; const t = Math.floor(ms/1000); const h = Math.floor(t/3600); const m = Math.floor((t%3600)/60); const sec = t%60; return `${s}${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; }
-    </script>
-</body>
-</html>
