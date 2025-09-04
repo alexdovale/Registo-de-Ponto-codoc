@@ -383,7 +383,6 @@
             const btn = type === 'in' ? ui.clockInButton : ui.clockOutButton; 
             btn.disabled = true; 
 
-            // Verifica se já existe um registro de saída para o dia, se sim, bloqueia
             const entriesQuery = query(collection(db, `/artifacts/${appId}/users/${user.uid}/time_entries`));
             onSnapshot(entriesQuery, (snapshot) => {
                 const todayEntries = snapshot.docs.filter(d => new Date(d.data().timestamp.toDate()).toDateString() === new Date().toDateString());
