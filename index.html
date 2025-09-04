@@ -235,30 +235,19 @@
             ui.dailyLimitMessage.classList.add('hidden');
         }
         
-        /**
-         * [CORRIGIDO] Calcula e exibe o resumo do dia atual (hoje).
-         */
         function calculateAndDisplayDailyBalance(entries) {
             let workedMs = 0;
-            // Ordena as entradas de hoje para garantir que os pares sejam calculados corretamente
-            const todayEntries = entries
-                .filter(e => new Date(e.timestamp.toDate()).toDateString() === new Date().toDateString())
-                .sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis());
+            const todayEntries = entries.filter(e => new Date(e.timestamp.toDate()).toDateString() === new Date().toDateString());
+            const todayIns = todayEntries.filter(e => e.type === 'in').map(e => e.timestamp.toMillis());
+            const todayOuts = todayEntries.filter(e => e.type === 'out').map(e => e.timestamp.toMillis());
 
-            // Itera pelas entradas em pares para calcular o tempo trabalhado
-            for (let i = 0; i < todayEntries.length - 1; i += 2) {
-                if (todayEntries[i].type === 'in' && todayEntries[i+1]?.type === 'out') {
-                    workedMs += todayEntries[i+1].timestamp.toMillis() - todayEntries[i].timestamp.toMillis();
-                }
+            for (let i = 0; i < Math.min(todayIns.length, todayOuts.length); i++) {
+                workedMs += todayOuts[i] - todayIns[i];
             }
 
             ui.totalWorkedSpan.textContent = formatMilliseconds(workedMs);
 
-            const insCount = todayEntries.filter(e => e.type === 'in').length;
-            const outsCount = todayEntries.filter(e => e.type === 'out').length;
-
-            // Só calcula o saldo final se o número de entradas e saídas for igual (dia completo)
-            if (insCount > 0 && insCount === outsCount) {
+            if (todayIns.length > 0 && todayIns.length === todayOuts.length) {
                 const balanceMs = workedMs - (6 * 3600 * 1000);
                 const isTolerated = Math.abs(balanceMs) <= (15 * 60 * 1000);
                 ui.dailyBalanceSpan.textContent = isTolerated ? '00:00:00' : formatMilliseconds(balanceMs, true);
@@ -269,9 +258,6 @@
             }
         }
         
-        /**
-         * [CORRIGIDO] Renderiza o histórico de todos os dias, incluindo dias incompletos.
-         */
         function renderHistory(entries, requests) {
             ui.historyTableBody.innerHTML = '';
             
@@ -294,47 +280,44 @@
             sortedDays.forEach(date => {
                 const dayEntries = entriesByDay[date];
                 
-                const ins = dayEntries.ins.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
-                const outs = dayEntries.outs.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
-                
-                let dailyWorkedMs = 0;
-                const sortedDayEntries = [...dayEntries.ins, ...dayEntries.outs].sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
-                
-                for (let i = 0; i < sortedDayEntries.length - 1; i += 2) {
-                     if (sortedDayEntries[i].type === 'in' && sortedDayEntries[i+1]?.type === 'out') {
-                         dailyWorkedMs += sortedDayEntries[i+1].timestamp.toMillis() - sortedDayEntries[i].timestamp.toMillis();
-                     }
-                }
-
-                let balanceText = '---';
-                let balanceClass = 'text-gray-500';
-
-                // Só calcula o saldo final se o dia estiver completo
-                if (dayEntries.ins.length > 0 && dayEntries.ins.length === dayEntries.outs.length) {
-                    const dailyBalanceMs = dailyWorkedMs - (6 * 3600 * 1000);
+                if (dayEntries.ins.length > 0) { // Mostra o dia se houver pelo menos um registro
+                    const ins = dayEntries.ins.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
+                    const outs = dayEntries.outs.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
                     
-                    if (Math.abs(dailyBalanceMs) > (15 * 60 * 1000)) {
+                    let dailyWorkedMs = 0;
+                    if (ins.length === outs.length) {
+                        const sortedDayEntries = [...dayEntries.ins, ...dayEntries.outs].sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
+                        for (let i = 0; i < sortedDayEntries.length - 1; i += 2) {
+                            dailyWorkedMs += sortedDayEntries[i+1].timestamp.toMillis() - sortedDayEntries[i].timestamp.toMillis();
+                        }
+                    }
+
+                    const dailyBalanceMs = dailyWorkedMs - (6 * 3600 * 1000);
+                    if (Math.abs(dailyBalanceMs) > (15 * 60 * 1000) && ins.length === outs.length) {
                         totalMonthlyBalanceMs += dailyBalanceMs;
                     }
                     
-                    balanceText = Math.abs(dailyBalanceMs) <= (15 * 60 * 1000) ? '00:00:00' : formatMilliseconds(dailyBalanceMs, true);
-                    balanceClass = dailyBalanceMs > (15 * 60 * 1000) ? 'text-green-600' : (dailyBalanceMs < -(15 * 60 * 1000) ? 'text-red-600' : 'text-gray-800');
+                    let balanceText = '---', balanceClass = 'text-gray-700';
+                    if (ins.length === outs.length && ins.length > 0) {
+                        balanceText = Math.abs(dailyBalanceMs) <= (15 * 60 * 1000) ? '00:00:00' : formatMilliseconds(dailyBalanceMs, true);
+                        balanceClass = dailyBalanceMs > 0 ? 'text-green-600' : 'text-red-600';
+                    }
+                    
+                    const requestForDay = requests.find(r => r.date === date);
+                    let requestIcon = `<svg class="w-6 h-6 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`;
+                    let statusText = '', statusColor = '';
+                    if (requestForDay) {
+                        if(requestForDay.status === 'approved') { statusText = 'Aprovada'; statusColor = 'text-green-500'; }
+                        else if (requestForDay.status === 'declined') { statusText = 'Recusada'; statusColor = 'text-red-500'; }
+                        else { statusText = 'Pendente'; statusColor = 'text-yellow-500'; }
+                        requestIcon = `<svg class="w-6 h-6 ${statusColor}" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>`;
+                    }
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td class="px-6 py-4">${date}</td><td class="px-6 py-4">${ins.join(', ')}</td><td class="px-6 py-4">${outs.join(', ')}</td><td class="px-6 py-4 font-medium ${balanceClass}">${balanceText}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><button class="request-btn cursor-pointer" data-date="${date}">${requestIcon}</button><span class="text-xs font-medium ${statusColor}">${statusText}</span></div></td>`;
+                    row.querySelector('.request-btn').addEventListener('click', () => openRequestModal(date));
+                    ui.historyTableBody.appendChild(row);
                 }
-                
-                const requestForDay = requests.find(r => r.date === date);
-                let requestIcon = `<svg class="w-6 h-6 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`;
-                let statusText = '', statusColor = '';
-                if (requestForDay) {
-                    if(requestForDay.status === 'approved') { statusText = 'Aprovada'; statusColor = 'text-green-500'; }
-                    else if (requestForDay.status === 'declined') { statusText = 'Recusada'; statusColor = 'text-red-500'; }
-                    else { statusText = 'Pendente'; statusColor = 'text-yellow-500'; }
-                    requestIcon = `<svg class="w-6 h-6 ${statusColor}" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>`;
-                }
-                
-                const row = document.createElement('tr');
-                row.innerHTML = `<td class="px-6 py-4">${date}</td><td class="px-6 py-4">${ins.join(', ')}</td><td class="px-6 py-4">${outs.join(', ')}</td><td class="px-6 py-4 font-medium ${balanceClass}">${balanceText}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><button class="request-btn cursor-pointer" data-date="${date}">${requestIcon}</button><span class="text-xs font-medium ${statusColor}">${statusText}</span></div></td>`;
-                row.querySelector('.request-btn').addEventListener('click', () => openRequestModal(date));
-                ui.historyTableBody.appendChild(row);
             });
 
             if (ui.historyTableBody.children.length === 0) {
