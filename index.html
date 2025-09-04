@@ -320,10 +320,10 @@
                 let requestIcon = `<svg class="w-6 h-6 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`;
                 let statusText = '', statusColor = '';
                 if (requestsForDay.length > 0) {
-                    if (requestsForDay.some(r => r.status === 'declined')) {
-                        statusText = 'Recusada'; statusColor = 'text-red-500';
-                    } else if (requestsForDay.some(r => r.status === 'pending')) {
+                    if (requestsForDay.some(r => r.status === 'pending')) {
                         statusText = 'Pendente'; statusColor = 'text-yellow-500';
+                    } else if (requestsForDay.some(r => r.status === 'declined')) {
+                        statusText = 'Recusada'; statusColor = 'text-red-500';
                     } else {
                         statusText = 'Aprovada'; statusColor = 'text-green-500';
                     }
@@ -332,7 +332,8 @@
                 
                 const row = document.createElement('tr');
                 row.innerHTML = `<td class="px-6 py-4">${date}</td><td class="px-6 py-4">${ins.join(', ')}</td><td class="px-6 py-4">${outs.join(', ')}</td><td class="px-6 py-4 font-medium ${balanceClass}">${balanceText}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><button class="request-btn cursor-pointer" data-date="${date}">${requestIcon}</button><span class="text-xs font-medium ${statusColor}">${statusText}</span></div></td>`;
-                row.querySelector('.request-btn').addEventListener('click', () => openRequestModal(date));
+                const requestBtn = row.querySelector('.request-btn');
+                requestBtn.addEventListener('click', (event) => openRequestModal(date, event.currentTarget));
                 ui.historyTableBody.appendChild(row);
             });
 
@@ -346,11 +347,22 @@
             ui.accumulatedBalanceSpan.className = `text-3xl font-bold ${totalMonthlyBalanceMs >= 0 ? 'text-green-600' : 'text-red-600'}`;
         }
         
-        function openRequestModal(date) {
+        function openRequestModal(date, buttonElement) {
             currentRequestDate = date;
             ui.request.title.textContent = `Enviar Solicitação para ${date}`;
             ui.request.text.value = '';
             ui.request.msg.textContent = '';
+
+            // Reseta o ícone e o texto para o estado inicial ao abrir o modal
+            if (buttonElement) {
+                buttonElement.innerHTML = `<svg class="w-6 h-6 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`;
+                const statusSpan = buttonElement.nextElementSibling;
+                if (statusSpan) {
+                    statusSpan.textContent = '';
+                    statusSpan.className = 'text-xs font-medium';
+                }
+            }
+
             ui.request.modal.style.display = 'flex';
         }
         
@@ -409,4 +421,3 @@
     </script>
 </body>
 </html>
-
