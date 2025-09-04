@@ -229,23 +229,12 @@
         }
 
         function updateButtonState(todayEntries) {
-            const hasClockIn = todayEntries.some(e => e.type === 'in');
-            const hasClockOut = todayEntries.some(e => e.type === 'out');
-            
-            if (hasClockIn && hasClockOut) {
-                ui.clockInButton.disabled = true;
-                ui.clockOutButton.disabled = true;
-                ui.dailyLimitMessage.classList.remove('hidden');
-            } else if (hasClockIn) {
-                ui.clockInButton.disabled = true;
-                ui.clockOutButton.disabled = false;
-                ui.dailyLimitMessage.classList.add('hidden');
-            } else {
-                ui.clockInButton.disabled = false;
-                ui.clockOutButton.disabled = true;
-                ui.dailyLimitMessage.classList.add('hidden');
-            }
+            const lastEntry = todayEntries[todayEntries.length - 1];
+            ui.clockInButton.disabled = lastEntry && lastEntry.type === 'in';
+            ui.clockOutButton.disabled = !lastEntry || lastEntry.type === 'out';
+            ui.dailyLimitMessage.classList.add('hidden');
         }
+        
 
         function calculateAndDisplayDailyBalance(entries) {
             let workedMs = 0;
@@ -276,9 +265,8 @@
             const entriesByDay = entries.reduce((acc, entry) => {
                 const date = entry.timestamp.toDate().toLocaleDateString('pt-BR');
                 if (!acc[date]) {
-                    acc[date] = { ins: [], outs: [], allEntries: [] };
+                    acc[date] = { ins: [], outs: [] };
                 }
-                acc[date].allEntries.push(entry);
                 if (entry.type === 'in') {
                     acc[date].ins.push(entry);
                 } else if (entry.type === 'out') {
@@ -292,10 +280,12 @@
             
             sortedDays.forEach(date => {
                 const dayEntries = entriesByDay[date];
-                const ins = dayEntries.ins.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
-                const outs = dayEntries.outs.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
                 
-                if (ins.length === outs.length && ins.length > 0) {
+                // Só renderiza dias com pares de entrada e saída completos
+                if (dayEntries.ins.length === dayEntries.outs.length && dayEntries.ins.length > 0) {
+                    const ins = dayEntries.ins.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
+                    const outs = dayEntries.outs.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
+                    
                     let dailyWorkedMs = 0;
                     const sortedDayEntries = [...dayEntries.ins, ...dayEntries.outs].sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
                     for (let i = 0; i < sortedDayEntries.length - 1; i += 2) {
@@ -353,8 +343,9 @@
             const q = query(requestsRef, where("userId", "==", user.uid), where("date", "==", currentRequestDate));
             const existing = await getDocs(q);
 
-            if (!existing.empty) {
-                ui.request.msg.textContent = 'Já existe uma solicitação para esta data.';
+            // Apenas bloqueia se houver uma solicitação PENDENTE
+            if (!existing.empty && existing.docs.some(doc => doc.data().status === 'pending')) {
+                ui.request.msg.textContent = 'Já existe uma solicitação pendente para esta data.';
                 ui.request.msg.className = 'text-sm mt-4 text-center text-red-600';
                 return;
             }
