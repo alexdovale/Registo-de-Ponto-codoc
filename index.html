@@ -114,7 +114,7 @@
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, onSnapshot, doc, getDoc, Timestamp, setLogLevel, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const allowedIps = ["SEU_IP_NUMERO_1_AQUI", "SEU_IP_NUMERO_2_AQUI"];
+        const allowedIps = ["201.33.168.237", "SEU_IP_NUMERO_2_AQUI"];
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "AIzaSyBqWlyh2vo0I_gRWysG2NYdz0gvopRO3SI", authDomain: "sistema-ponto-v2.firebaseapp.com", projectId: "sistema-ponto-v2", storageBucket: "sistema-ponto-v2.firebasestorage.app", messagingSenderId: "582643132528", appId: "1:582643132528:web:2d489ae3c23786152a2cb5" };
         
@@ -331,4 +331,5 @@
     </script>
 </body>
 </html>
+
 
