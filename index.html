@@ -231,7 +231,7 @@
         function updateButtonState(todayEntries) {
             const hasClockIn = todayEntries.some(e => e.type === 'in');
             const hasClockOut = todayEntries.some(e => e.type === 'out');
-
+            
             if (hasClockIn && hasClockOut) {
                 ui.clockInButton.disabled = true;
                 ui.clockOutButton.disabled = true;
@@ -249,86 +249,84 @@
 
         function calculateAndDisplayDailyBalance(entries) {
             let workedMs = 0;
-            for (let i = 0; i < entries.length - 1; i += 2) {
-                if (entries[i]?.type === 'in' && entries[i+1]?.type === 'out') {
-                    workedMs += entries[i+1].timestamp.toMillis() - entries[i].timestamp.toMillis();
-                }
+            const todayEntries = entries.filter(e => new Date(e.timestamp.toDate()).toDateString() === new Date().toDateString());
+            const todayIns = todayEntries.filter(e => e.type === 'in').map(e => e.timestamp.toMillis());
+            const todayOuts = todayEntries.filter(e => e.type === 'out').map(e => e.timestamp.toMillis());
+
+            for (let i = 0; i < Math.min(todayIns.length, todayOuts.length); i++) {
+                workedMs += todayOuts[i] - todayIns[i];
             }
+
             ui.totalWorkedSpan.textContent = formatMilliseconds(workedMs);
-            if (entries.length % 2 !== 0 || entries.length === 0) {
+
+            if (todayIns.length > 0 && todayIns.length === todayOuts.length) {
+                const balanceMs = workedMs - (6 * 3600 * 1000);
+                const isTolerated = Math.abs(balanceMs) <= (15 * 60 * 1000);
+                ui.dailyBalanceSpan.textContent = isTolerated ? '00:00:00' : formatMilliseconds(balanceMs, true);
+                ui.dailyBalanceSpan.className = `text-lg sm:text-xl font-bold ${isTolerated ? 'text-gray-800' : balanceMs > 0 ? 'text-green-600' : 'text-red-600'}`;
+            } else {
                 ui.dailyBalanceSpan.textContent = '---';
                 ui.dailyBalanceSpan.className = 'text-lg sm:text-xl font-bold text-gray-800';
-                return;
             }
-            const balanceMs = workedMs - (6 * 3600 * 1000);
-            const isTolerated = Math.abs(balanceMs) <= (15 * 60 * 1000);
-            ui.dailyBalanceSpan.textContent = isTolerated ? '00:00:00' : formatMilliseconds(balanceMs, true);
-            ui.dailyBalanceSpan.className = `text-lg sm:text-xl font-bold ${isTolerated ? 'text-gray-800' : balanceMs > 0 ? 'text-green-600' : 'text-red-600'}`;
         }
         
         function renderHistory(entries, requests) {
             ui.historyTableBody.innerHTML = '';
             
-            // Filtra e agrupa registros com entrada e saída completas
-            const completeEntriesByDay = entries.filter(e => e.type === 'in' || e.type === 'out')
-                .reduce((acc, entry) => {
-                    const date = entry.timestamp.toDate().toLocaleDateString('pt-BR');
-                    if (!acc[date]) {
-                        acc[date] = { ins: [], outs: [] };
-                    }
-                    if (entry.type === 'in') {
-                        acc[date].ins.push(entry);
-                    } else {
-                        acc[date].outs.push(entry);
-                    }
-                    return acc;
-                }, {});
+            const entriesByDay = entries.reduce((acc, entry) => {
+                const date = entry.timestamp.toDate().toLocaleDateString('pt-BR');
+                if (!acc[date]) {
+                    acc[date] = { ins: [], outs: [], allEntries: [] };
+                }
+                acc[date].allEntries.push(entry);
+                if (entry.type === 'in') {
+                    acc[date].ins.push(entry);
+                } else if (entry.type === 'out') {
+                    acc[date].outs.push(entry);
+                }
+                return acc;
+            }, {});
 
-            // Calcula o saldo de cada dia e o saldo geral do mês
             let totalMonthlyBalanceMs = 0;
-            const sortedDays = Object.keys(completeEntriesByDay).sort((a, b) => new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-')));
+            const sortedDays = Object.keys(entriesByDay).sort((a, b) => new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-')));
             
             sortedDays.forEach(date => {
-                const dayEntries = completeEntriesByDay[date];
+                const dayEntries = entriesByDay[date];
                 const ins = dayEntries.ins.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
                 const outs = dayEntries.outs.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
                 
-                let dailyWorkedMs = 0;
-                // Apenas calcula se houver pares de entrada e saída
-                if (ins.length > 0 && outs.length > 0) {
+                if (ins.length === outs.length && ins.length > 0) {
+                    let dailyWorkedMs = 0;
                     const sortedDayEntries = [...dayEntries.ins, ...dayEntries.outs].sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
                     for (let i = 0; i < sortedDayEntries.length - 1; i += 2) {
                         dailyWorkedMs += sortedDayEntries[i+1].timestamp.toMillis() - sortedDayEntries[i].timestamp.toMillis();
                     }
-                }
 
-                let balanceText = '---', balanceClass = 'text-gray-700';
-                if (ins.length === outs.length && ins.length > 0) {
                     const dailyBalanceMs = dailyWorkedMs - (6 * 3600 * 1000);
                     if (Math.abs(dailyBalanceMs) > (15 * 60 * 1000)) {
                         totalMonthlyBalanceMs += dailyBalanceMs;
                     }
-                    balanceText = Math.abs(dailyBalanceMs) <= (15 * 60 * 1000) ? '00:00:00' : formatMilliseconds(dailyBalanceMs, true);
-                    balanceClass = dailyBalanceMs > 0 ? 'text-green-600' : 'text-red-600';
-                }
+                    const balanceText = Math.abs(dailyBalanceMs) <= (15 * 60 * 1000) ? '00:00:00' : formatMilliseconds(dailyBalanceMs, true);
+                    const balanceClass = dailyBalanceMs > 0 ? 'text-green-600' : 'text-red-600';
 
-                const requestForDay = requests.find(r => r.date === date);
-                let requestIcon = `<svg class="w-6 h-6 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`;
-                let statusText = '', statusColor = '';
-                if (requestForDay) {
-                    if(requestForDay.status === 'approved') { statusText = 'Aprovada'; statusColor = 'text-green-500'; }
-                    else if (requestForDay.status === 'declined') { statusText = 'Recusada'; statusColor = 'text-red-500'; }
-                    else { statusText = 'Pendente'; statusColor = 'text-yellow-500'; }
-                    requestIcon = `<svg class="w-6 h-6 ${statusColor}" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>`;
+                    const requestForDay = requests.find(r => r.date === date);
+                    let requestIcon = `<svg class="w-6 h-6 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`;
+                    let statusText = '', statusColor = '';
+                    if (requestForDay) {
+                        if(requestForDay.status === 'approved') { statusText = 'Aprovada'; statusColor = 'text-green-500'; }
+                        else if (requestForDay.status === 'declined') { statusText = 'Recusada'; statusColor = 'text-red-500'; }
+                        else { statusText = 'Pendente'; statusColor = 'text-yellow-500'; }
+                        requestIcon = `<svg class="w-6 h-6 ${statusColor}" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>`;
+                    }
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td class="px-6 py-4">${date}</td><td class="px-6 py-4">${ins.join(', ')}</td><td class="px-6 py-4">${outs.join(', ')}</td><td class="px-6 py-4 font-medium ${balanceClass}">${balanceText}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><button class="request-btn cursor-pointer" data-date="${date}">${requestIcon}</button><span class="text-xs font-medium ${statusColor}">${statusText}</span></div></td>`;
+                    row.querySelector('.request-btn').addEventListener('click', () => openRequestModal(date));
+                    ui.historyTableBody.appendChild(row);
                 }
-                
-                const row = document.createElement('tr');
-                row.innerHTML = `<td class="px-6 py-4">${date}</td><td class="px-6 py-4">${ins.join(', ')}</td><td class="px-6 py-4">${outs.join(', ')}</td><td class="px-6 py-4 font-medium ${balanceClass}">${balanceText}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><button class="request-btn cursor-pointer" data-date="${date}">${requestIcon}</button><span class="text-xs font-medium ${statusColor}">${statusText}</span></div></td>`;
-                row.querySelector('.request-btn').addEventListener('click', () => openRequestModal(date));
-                ui.historyTableBody.appendChild(row);
             });
 
-            if (Object.keys(completeEntriesByDay).length === 0) {
+            if (ui.historyTableBody.children.length === 0) {
                  ui.noHistoryMessage.classList.remove('hidden');
             } else {
                  ui.noHistoryMessage.classList.add('hidden');
@@ -399,28 +397,11 @@
             const btn = type === 'in' ? ui.clockInButton : ui.clockOutButton; 
             btn.disabled = true; 
 
-            const entriesQuery = query(collection(db, `/artifacts/${appId}/users/${user.uid}/time_entries`));
-            onSnapshot(entriesQuery, (snapshot) => {
-                const todayEntries = snapshot.docs.filter(d => new Date(d.data().timestamp.toDate()).toDateString() === new Date().toDateString());
-                const hasOutEntry = todayEntries.some(e => e.type === 'out');
-                
-                if (hasOutEntry && type === 'out') {
-                    btn.disabled = true;
-                    ui.dailyLimitMessage.classList.remove('hidden');
-                    return;
-                }
-                if (hasOutEntry && type === 'in') {
-                    btn.disabled = true;
-                    ui.dailyLimitMessage.classList.remove('hidden');
-                    return;
-                }
-
-                addDoc(collection(db, `/artifacts/${appId}/users/${user.uid}/time_entries`), { 
-                    type, 
-                    timestamp: Timestamp.now(), 
-                    userId: user.uid 
-                }).catch(() => btn.disabled = false); 
-            });
+            addDoc(collection(db, `/artifacts/${appId}/users/${user.uid}/time_entries`), { 
+                type, 
+                timestamp: Timestamp.now(), 
+                userId: user.uid 
+            }).catch(() => btn.disabled = false); 
         }
         function formatMilliseconds(ms, neg = false) { const s = ms < 0 ? '-' : ''; if(neg) ms=Math.abs(ms); else if(ms<0) ms=0; const t = Math.floor(ms/1000); const h = Math.floor(t/3600); const m = Math.floor((t%3600)/60); const sec = t%60; return `${s}${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; }
     </script>
