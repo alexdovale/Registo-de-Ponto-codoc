@@ -261,7 +261,7 @@
 
             if (todayIns.length > 0 && todayIns.length === todayOuts.length) {
                 const balanceMs = workedMs - (6 * 3600 * 1000);
-                const isTolerated = Math.abs(balanceMs) <= (16 * 60 * 1000);
+                const isTolerated = Math.abs(balanceMs) <= (15 * 60 * 1000);
                 ui.dailyBalanceSpan.textContent = isTolerated ? '00:00:00' : formatMilliseconds(balanceMs, true);
                 ui.dailyBalanceSpan.className = `text-lg sm:text-xl font-bold ${isTolerated ? 'text-gray-800' : balanceMs > 0 ? 'text-green-600' : 'text-red-600'}`;
             } else {
@@ -306,7 +306,7 @@
                     }
 
                     const dailyBalanceMs = dailyWorkedMs - (6 * 3600 * 1000);
-                    const isTolerated = Math.abs(dailyBalanceMs) <= (16 * 60 * 1000);
+                    const isTolerated = Math.abs(dailyBalanceMs) <= (15 * 60 * 1000);
 
                     if (!isTolerated) {
                         totalMonthlyBalanceMs += dailyBalanceMs;
