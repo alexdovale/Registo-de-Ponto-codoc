@@ -280,7 +280,7 @@
             sortedDays.forEach(date => {
                 const dayEntries = entriesByDay[date];
                 
-                if (dayEntries.ins.length > 0) { // Mostra o dia se houver pelo menos um registro
+                if (dayEntries.ins.length > 0) {
                     const ins = dayEntries.ins.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
                     const outs = dayEntries.outs.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
                     
