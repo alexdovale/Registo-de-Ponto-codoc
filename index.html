@@ -268,35 +268,45 @@
         
         function renderHistory(entries, requests) {
             ui.historyTableBody.innerHTML = '';
-            ui.noHistoryMessage.classList.toggle('hidden', entries.length > 0);
-            if(entries.length === 0) { ui.accumulatedBalanceSpan.textContent = '00:00:00'; return; }
+            
+            // Filtra e agrupa registros com entrada e saída completas
+            const completeEntriesByDay = entries.filter(e => e.type === 'in' || e.type === 'out')
+                .reduce((acc, entry) => {
+                    const date = entry.timestamp.toDate().toLocaleDateString('pt-BR');
+                    if (!acc[date]) {
+                        acc[date] = { ins: [], outs: [] };
+                    }
+                    if (entry.type === 'in') {
+                        acc[date].ins.push(entry);
+                    } else {
+                        acc[date].outs.push(entry);
+                    }
+                    return acc;
+                }, {});
 
-            let totalBalanceMs = 0;
-            const entriesByDay = entries.reduce((acc, entry) => {
-                const date = entry.timestamp.toDate().toLocaleDateString('pt-BR');
-                if (!acc[date]) acc[date] = [];
-                acc[date].push(entry);
-                return acc;
-            }, {});
-
-            const sortedDays = Object.keys(entriesByDay).sort((a, b) => new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-')));
+            // Calcula o saldo de cada dia e o saldo geral do mês
+            let totalMonthlyBalanceMs = 0;
+            const sortedDays = Object.keys(completeEntriesByDay).sort((a, b) => new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-')));
             
             sortedDays.forEach(date => {
-                const dayEntries = entriesByDay[date];
-                const ins = dayEntries.filter(e => e.type === 'in').map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
-                const outs = dayEntries.filter(e => e.type === 'out').map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
+                const dayEntries = completeEntriesByDay[date];
+                const ins = dayEntries.ins.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
+                const outs = dayEntries.outs.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
+                
                 let dailyWorkedMs = 0;
-                for (let i = 0; i < dayEntries.length - 1; i += 2) {
-                    if (dayEntries[i].type === 'in' && dayEntries[i+1].type === 'out') {
-                        dailyWorkedMs += dayEntries[i+1].timestamp.toMillis() - dayEntries[i].timestamp.toMillis();
+                // Apenas calcula se houver pares de entrada e saída
+                if (ins.length > 0 && outs.length > 0) {
+                    const sortedDayEntries = [...dayEntries.ins, ...dayEntries.outs].sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
+                    for (let i = 0; i < sortedDayEntries.length - 1; i += 2) {
+                        dailyWorkedMs += sortedDayEntries[i+1].timestamp.toMillis() - sortedDayEntries[i].timestamp.toMillis();
                     }
                 }
-                
+
                 let balanceText = '---', balanceClass = 'text-gray-700';
-                if (dayEntries.length % 2 === 0 && dayEntries.length > 0) {
+                if (ins.length === outs.length && ins.length > 0) {
                     const dailyBalanceMs = dailyWorkedMs - (6 * 3600 * 1000);
                     if (Math.abs(dailyBalanceMs) > (15 * 60 * 1000)) {
-                        totalBalanceMs += dailyBalanceMs;
+                        totalMonthlyBalanceMs += dailyBalanceMs;
                     }
                     balanceText = Math.abs(dailyBalanceMs) <= (15 * 60 * 1000) ? '00:00:00' : formatMilliseconds(dailyBalanceMs, true);
                     balanceClass = dailyBalanceMs > 0 ? 'text-green-600' : 'text-red-600';
@@ -318,8 +328,14 @@
                 ui.historyTableBody.appendChild(row);
             });
 
-            ui.accumulatedBalanceSpan.textContent = formatMilliseconds(totalBalanceMs, true);
-            ui.accumulatedBalanceSpan.className = `text-3xl font-bold ${totalBalanceMs >= 0 ? 'text-green-600' : 'text-red-600'}`;
+            if (Object.keys(completeEntriesByDay).length === 0) {
+                 ui.noHistoryMessage.classList.remove('hidden');
+            } else {
+                 ui.noHistoryMessage.classList.add('hidden');
+            }
+
+            ui.accumulatedBalanceSpan.textContent = formatMilliseconds(totalMonthlyBalanceMs, true);
+            ui.accumulatedBalanceSpan.className = `text-3xl font-bold ${totalMonthlyBalanceMs >= 0 ? 'text-green-600' : 'text-red-600'}`;
         }
         
         function openRequestModal(date) {
