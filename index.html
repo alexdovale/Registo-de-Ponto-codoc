@@ -63,7 +63,7 @@
                 <div id="daily-limit-message" class="hidden p-4 text-center bg-green-100 text-green-700 rounded-lg">O registo de ponto para hoje já foi concluído.</div>
                 <div class="text-center p-4 bg-gray-50 rounded-lg">
                     <p class="text-sm font-medium text-gray-500">SALDO GERAL DE HORAS</p>
-                    <p id="accumulated-balance" class="text-3xl font-bold text-gray-800">--:--:--</p>
+                    <p id="accumulated-balance" class="text-3xl font-bold text-gray-800">--:--</p>
                 </div>
                 <div class="grid md:grid-cols-2 gap-6 items-center">
                     <div class="text-center">
@@ -76,8 +76,8 @@
                     <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
                         <h3 class="text-lg font-medium text-center mb-4">Resumo do Dia</h3>
                         <div class="grid grid-cols-3 gap-2 text-center">
-                            <div><p class="text-sm font-medium text-gray-500">Jornada</p><p class="text-lg sm:text-xl font-bold text-gray-800">06:00:00</p></div>
-                            <div><p class="text-sm font-medium text-gray-500">Trabalhado</p><p id="total-worked" class="text-lg sm:text-xl font-bold text-gray-800">00:00:00</p></div>
+                            <div><p class="text-sm font-medium text-gray-500">Jornada</p><p class="text-lg sm:text-xl font-bold text-gray-800">06:00</p></div>
+                            <div><p class="text-sm font-medium text-gray-500">Trabalhado</p><p id="total-worked" class="text-lg sm:text-xl font-bold text-gray-800">00:00</p></div>
                             <div><p class="text-sm font-medium text-gray-500">Saldo</p><p id="daily-balance" class="text-lg sm:text-xl font-bold">---</p></div>
                         </div>
                     </div>
@@ -262,7 +262,7 @@
             if (todayIns.length > 0 && todayIns.length === todayOuts.length) {
                 const balanceMs = workedMs - (6 * 3600 * 1000);
                 const isTolerated = Math.abs(balanceMs) <= (15 * 60 * 1000);
-                ui.dailyBalanceSpan.textContent = isTolerated ? '00:00:00' : formatMilliseconds(balanceMs, true);
+                ui.dailyBalanceSpan.textContent = isTolerated ? '00:00' : formatMilliseconds(balanceMs, true);
                 ui.dailyBalanceSpan.className = `text-lg sm:text-xl font-bold ${isTolerated ? 'text-gray-800' : balanceMs > 0 ? 'text-green-600' : 'text-red-600'}`;
             } else {
                 ui.dailyBalanceSpan.textContent = '---';
@@ -292,8 +292,8 @@
             
             sortedDays.forEach(date => {
                 const dayEntries = entriesByDay[date];
-                const ins = dayEntries.ins.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
-                const outs = dayEntries.outs.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR'));
+                const ins = dayEntries.ins.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+                const outs = dayEntries.outs.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
                 
                 let balanceText = '---';
                 let balanceClass = 'text-yellow-500';
@@ -312,7 +312,7 @@
                         totalMonthlyBalanceMs += dailyBalanceMs;
                     }
                     
-                    balanceText = isTolerated ? '00:00:00' : formatMilliseconds(dailyBalanceMs, true);
+                    balanceText = isTolerated ? '00:00' : formatMilliseconds(dailyBalanceMs, true);
                     balanceClass = isTolerated ? 'text-gray-800' : dailyBalanceMs > 0 ? 'text-green-600' : 'text-red-600';
                 }
 
@@ -387,7 +387,7 @@
         updateClock();
         function updateClock() {
             const now = new Date();
-            ui.currentTimeSpan.textContent = now.toLocaleTimeString('pt-BR');
+            ui.currentTimeSpan.textContent = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
             ui.headerDateSpan.textContent = now.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             setTimeout(updateClock, 1000);
         }
@@ -405,7 +405,7 @@
                 userId: user.uid 
             }).catch(() => btn.disabled = false); 
         }
-        function formatMilliseconds(ms, neg = false) { const s = ms < 0 ? '-' : ''; if(neg) ms=Math.abs(ms); else if(ms<0) ms=0; const t = Math.floor(ms/1000); const h = Math.floor(t/3600); const m = Math.floor((t%3600)/60); const sec = t%60; return `${s}${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; }
+        function formatMilliseconds(ms, neg = false) { const s = ms < 0 ? '-' : ''; if(neg) ms=Math.abs(ms); else if(ms<0) ms=0; const t = Math.floor(ms/1000); const h = Math.floor(t/3600); const m = Math.floor((t%3600)/60); return `${s}${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; }
     </script>
 </body>
 </html>
