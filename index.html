@@ -316,13 +316,17 @@
                     balanceClass = isTolerated ? 'text-gray-800' : dailyBalanceMs > 0 ? 'text-green-600' : 'text-red-600';
                 }
 
-                const requestForDay = requests.find(r => r.date === date);
+                const requestsForDay = requests.filter(r => r.date === date);
                 let requestIcon = `<svg class="w-6 h-6 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`;
                 let statusText = '', statusColor = '';
-                if (requestForDay) {
-                    if(requestForDay.status === 'approved') { statusText = 'Aprovada'; statusColor = 'text-green-500'; }
-                    else if (requestForDay.status === 'declined') { statusText = 'Recusada'; statusColor = 'text-red-500'; }
-                    else { statusText = 'Pendente'; statusColor = 'text-yellow-500'; }
+                if (requestsForDay.length > 0) {
+                    if (requestsForDay.some(r => r.status === 'declined')) {
+                        statusText = 'Recusada'; statusColor = 'text-red-500';
+                    } else if (requestsForDay.some(r => r.status === 'pending')) {
+                        statusText = 'Pendente'; statusColor = 'text-yellow-500';
+                    } else {
+                        statusText = 'Aprovada'; statusColor = 'text-green-500';
+                    }
                     requestIcon = `<svg class="w-6 h-6 ${statusColor}" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>`;
                 }
                 
@@ -356,15 +360,7 @@
             if (!user || !currentRequestDate) return;
 
             const requestsRef = collection(db, `/artifacts/${appId}/requests`);
-            const q = query(requestsRef, where("userId", "==", user.uid), where("date", "==", currentRequestDate));
-            const existing = await getDocs(q);
-
-            if (!existing.empty) {
-                ui.request.msg.textContent = 'Já existe uma solicitação para esta data.';
-                ui.request.msg.className = 'text-sm mt-4 text-center text-red-600';
-                return;
-            }
-
+            
             try {
                 await addDoc(requestsRef, { userId: user.uid, userName: ui.userNameSpan.textContent, date: currentRequestDate, text: ui.request.text.value, status: 'pending', createdAt: Timestamp.now() });
                 ui.request.msg.textContent = 'Solicitação enviada com sucesso!';
