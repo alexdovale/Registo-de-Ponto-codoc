@@ -338,7 +338,13 @@
                     if (dateObj.getMonth() === currentMonth && dateObj.getFullYear() === currentYear) {
                          totalMonthlyBalanceMs -= (6 * 3600 * 1000);
                     }
-                } else if (dayEntries.ins.length > 0 && dayEntries.ins.length === dayEntries.outs.length) {
+                }else if (dayEntries.ins.length > 0 && dayEntries.ins.length > dayEntries.outs.length) {
+                        statusText = 'Em andamento';
+                        statusColor = 'text-blue-500';
+                        balanceText = '---';
+                        balanceClass = 'text-gray-500';
+                }
+                 else if (dayEntries.ins.length > 0 && dayEntries.ins.length === dayEntries.outs.length) {
                     let dailyWorkedMs = 0;
                     const sortedIns = dayEntries.ins.sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis());
                     const sortedOuts = dayEntries.outs.sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis());
