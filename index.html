@@ -276,7 +276,7 @@
 
         function renderHistory(entries, requests) {
             ui.historyTableBody.innerHTML = '';
-            
+
             const entriesByDay = entries.reduce((acc, entry) => {
                 const date = entry.timestamp.toDate().toLocaleDateString('pt-BR');
                 if (!acc[date]) {
@@ -293,24 +293,23 @@
 
             let totalMonthlyBalanceMs = 0;
             const today = new Date();
-            today.setHours(0, 0, 0, 0); // Normalizar para o início do dia
+            today.setHours(0, 0, 0, 0);
             const currentMonth = today.getMonth();
             const currentYear = today.getFullYear();
-            
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const allDaysInCurrentMonth = Array.from({ length: daysInMonth }, (_, i) => {
-                const day = i + 1;
-                const date = new Date(currentYear, currentMonth, day);
-                return date.toLocaleDateString('pt-BR');
-            });
-            
-            const allHistoryDays = Array.from(new Set([...Object.keys(entriesByDay), ...allDaysInCurrentMonth]))
-                .sort((a, b) => parseDateFromPTBR(a) - parseDateFromPTBR(b));
-            
+
+            // Crie um conjunto de datas para exibir: todos os dias com entradas + todos os dias do início do mês até hoje
+            const datesToShow = new Set(Object.keys(entriesByDay));
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+            for (let d = new Date(firstDayOfMonth); d <= today; d.setDate(d.getDate() + 1)) {
+                datesToShow.add(new Date(d).toLocaleDateString('pt-BR'));
+            }
+
+            const allHistoryDays = Array.from(datesToShow)
+                .sort((a, b) => parseDateFromPTBR(b) - parseDateFromPTBR(a)); // Ordenar em ordem decrescente
+
             allHistoryDays.forEach(date => {
                 const dateObj = parseDateFromPTBR(date);
-                if (dateObj > today) return; // Não mostrar dias futuros
-
+                
                 const dayEntries = entriesByDay[date] || { ins: [], outs: [] };
                 const ins = dayEntries.ins.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
                 const outs = dayEntries.outs.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
@@ -324,27 +323,14 @@
                 const dayOfWeek = dateObj.getDay();
                 const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
                 const isWorkday = !isWeekend;
+                const isToday = dateObj.toDateString() === today.toDateString();
 
                 if (approvedRequest) {
                     statusText = 'Abonada';
                     statusColor = 'text-green-500';
                     balanceText = '00:00';
                     balanceClass = 'text-green-600';
-                } else if (isWorkday && dateObj < today && dayEntries.ins.length === 0 && dayEntries.outs.length === 0) {
-                    statusText = 'Falta';
-                    statusColor = 'text-red-500';
-                    balanceText = '-06:00';
-                    balanceClass = 'text-red-600';
-                    if (dateObj.getMonth() === currentMonth && dateObj.getFullYear() === currentYear) {
-                         totalMonthlyBalanceMs -= (6 * 3600 * 1000);
-                    }
-                }else if (dayEntries.ins.length > 0 && dayEntries.ins.length > dayEntries.outs.length) {
-                        statusText = 'Em andamento';
-                        statusColor = 'text-blue-500';
-                        balanceText = '---';
-                        balanceClass = 'text-gray-500';
-                }
-                 else if (dayEntries.ins.length > 0 && dayEntries.ins.length === dayEntries.outs.length) {
+                } else if (dayEntries.ins.length > 0 && dayEntries.ins.length === dayEntries.outs.length) {
                     let dailyWorkedMs = 0;
                     const sortedIns = dayEntries.ins.sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis());
                     const sortedOuts = dayEntries.outs.sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis());
@@ -358,11 +344,35 @@
                     if (!isTolerated && dateObj.getMonth() === currentMonth && dateObj.getFullYear() === currentYear) {
                         totalMonthlyBalanceMs += dailyBalanceMs;
                     }
-                } else if (isWeekend) {
+                } else if (dayEntries.ins.length > 0 && dayEntries.ins.length > dayEntries.outs.length) {
+                    statusText = 'Em andamento';
+                    statusColor = 'text-blue-500';
+                    balanceText = '---';
+                    balanceClass = 'text-gray-500';
+                } else if (isWorkday && !isToday && dayEntries.ins.length === 0) {
+                    statusText = 'Falta';
+                    statusColor = 'text-red-500';
+                    balanceText = '-06:00';
+                    balanceClass = 'text-red-600';
+                    if (dateObj.getMonth() === currentMonth && dateObj.getFullYear() === currentYear) {
+                        totalMonthlyBalanceMs -= (6 * 3600 * 1000);
+                    }
+                } else if (isWeekend && dayEntries.ins.length === 0) {
                     balanceText = '';
                 } else {
-                    statusText = requestsForDay.some(r => r.status === 'pending') ? 'Pendente' : (requestsForDay.some(r => r.status === 'declined') ? 'Recusada' : '');
-                    statusColor = requestsForDay.some(r => r.status === 'pending') ? 'text-yellow-500' : 'text-red-500';
+                    const pendingRequest = requestsForDay.find(r => r.status === 'pending');
+                    const declinedRequest = requestsForDay.find(r => r.status === 'declined');
+
+                    if (pendingRequest) {
+                        statusText = 'Pendente';
+                        statusColor = 'text-yellow-500';
+                    } else if (declinedRequest) {
+                        statusText = 'Recusada';
+                        statusColor = 'text-red-500';
+                    } else if (!isToday && isWorkday) {
+                        statusText = 'Incompleto';
+                        statusColor = 'text-orange-500';
+                    }
                     balanceText = '--:--';
                     balanceClass = 'text-gray-500';
                 }
