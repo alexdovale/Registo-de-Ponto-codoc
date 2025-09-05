@@ -60,7 +60,7 @@
                 <div id="ip-error-message" class="hidden p-4 text-center bg-red-100 text-red-700 rounded-lg"></div>
                 <div id="daily-limit-message" class="hidden p-4 text-center bg-green-100 text-green-700 rounded-lg">O registo de ponto para hoje já foi concluído.</div>
                 <div class="text-center p-4 bg-gray-50 rounded-lg">
-                    <p class="text-sm font-medium text-gray-500">SALDO GERAL DE HORAS</p>
+                    <p class="text-sm font-medium text-gray-500">SALDO GERAL DE HORAS (MÊS ATUAL)</p>
                     <p id="accumulated-balance" class="text-3xl font-bold text-gray-800">--:--</p>
                 </div>
                 <div class="grid md:grid-cols-2 gap-6 items-center">
@@ -267,6 +267,13 @@
             }
         }
         
+        function parseDateFromPTBR(dateString) {
+            const [day, month, year] = dateString.split('/').map(Number);
+            // O mês no objeto Date do JavaScript é baseado em zero (0 para janeiro).
+            // Usar o meio-dia (12) para a hora evita que mudanças de fuso horário alterem o dia.
+            return new Date(year, month - 1, day, 12);
+        }
+
         function renderHistory(entries, requests) {
             ui.historyTableBody.innerHTML = '';
             
@@ -286,21 +293,24 @@
 
             let totalMonthlyBalanceMs = 0;
             const today = new Date();
+            today.setHours(0, 0, 0, 0); // Normalizar para o início do dia
             const currentMonth = today.getMonth();
             const currentYear = today.getFullYear();
             
-            // Cria um array de todas as datas do mês atual
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const allDaysInMonth = Array.from({ length: daysInMonth }, (_, i) => {
+            const allDaysInCurrentMonth = Array.from({ length: daysInMonth }, (_, i) => {
                 const day = i + 1;
                 const date = new Date(currentYear, currentMonth, day);
                 return date.toLocaleDateString('pt-BR');
             });
-
-            // Para cada dia do mês, determina o status e o saldo
-            const allHistoryDays = Array.from(new Set([...Object.keys(entriesByDay), ...allDaysInMonth])).sort((a, b) => new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-')));
+            
+            const allHistoryDays = Array.from(new Set([...Object.keys(entriesByDay), ...allDaysInCurrentMonth]))
+                .sort((a, b) => parseDateFromPTBR(b) - parseDateFromPTBR(a));
             
             allHistoryDays.forEach(date => {
+                const dateObj = parseDateFromPTBR(date);
+                if (dateObj > today) return; // Não mostrar dias futuros
+
                 const dayEntries = entriesByDay[date] || { ins: [], outs: [] };
                 const ins = dayEntries.ins.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
                 const outs = dayEntries.outs.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
@@ -311,33 +321,39 @@
                 
                 const requestsForDay = requests.filter(r => r.date === date);
                 const approvedRequest = requestsForDay.find(r => r.status === 'approved');
-                const isWorkday = new Date(date.split('/').reverse().join('-')).getDay() !== 0 && new Date(date.split('/').reverse().join('-')).getDay() !== 6;
+                const dayOfWeek = dateObj.getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                const isWorkday = !isWeekend;
 
-                // Nova Lógica
                 if (approvedRequest) {
                     statusText = 'Abonada';
                     statusColor = 'text-green-500';
                     balanceText = '00:00';
                     balanceClass = 'text-green-600';
-                } else if (isWorkday && dayEntries.ins.length === 0 && dayEntries.outs.length === 0) {
+                } else if (isWorkday && dateObj < today && dayEntries.ins.length === 0 && dayEntries.outs.length === 0) {
                     statusText = 'Falta';
                     statusColor = 'text-red-500';
                     balanceText = '-06:00';
                     balanceClass = 'text-red-600';
-                    totalMonthlyBalanceMs -= (6 * 3600 * 1000);
-                } else if (dayEntries.ins.length === outs.length && ins.length > 0) {
+                    if (dateObj.getMonth() === currentMonth && dateObj.getFullYear() === currentYear) {
+                         totalMonthlyBalanceMs -= (6 * 3600 * 1000);
+                    }
+                } else if (dayEntries.ins.length > 0 && dayEntries.ins.length === dayEntries.outs.length) {
                     let dailyWorkedMs = 0;
-                    const sortedDayEntries = [...dayEntries.ins, ...dayEntries.outs].sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
-                    for (let i = 0; i < sortedDayEntries.length - 1; i += 2) {
-                        dailyWorkedMs += sortedDayEntries[i+1].timestamp.toMillis() - sortedDayEntries[i].timestamp.toMillis();
+                    const sortedIns = dayEntries.ins.sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis());
+                    const sortedOuts = dayEntries.outs.sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis());
+                    for (let i = 0; i < sortedIns.length; i++) {
+                        dailyWorkedMs += sortedOuts[i].timestamp.toMillis() - sortedIns[i].timestamp.toMillis();
                     }
                     const dailyBalanceMs = dailyWorkedMs - (6 * 3600 * 1000);
                     const isTolerated = Math.abs(dailyBalanceMs) <= (15 * 60 * 1000);
                     balanceText = isTolerated ? '00:00' : formatMilliseconds(dailyBalanceMs, true);
                     balanceClass = isTolerated ? 'text-gray-800' : dailyBalanceMs > 0 ? 'text-green-600' : 'text-red-600';
-                    if (!isTolerated) {
+                    if (!isTolerated && dateObj.getMonth() === currentMonth && dateObj.getFullYear() === currentYear) {
                         totalMonthlyBalanceMs += dailyBalanceMs;
                     }
+                } else if (isWeekend) {
+                    balanceText = '';
                 } else {
                     statusText = requestsForDay.some(r => r.status === 'pending') ? 'Pendente' : (requestsForDay.some(r => r.status === 'declined') ? 'Recusada' : '');
                     statusColor = requestsForDay.some(r => r.status === 'pending') ? 'text-yellow-500' : 'text-red-500';
@@ -349,9 +365,10 @@
                 if (requestsForDay.length > 0) {
                     requestIcon = `<svg class="w-6 h-6 ${statusColor}" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>`;
                 }
-
+                
+                const dayName = dateObj.toLocaleDateString('pt-BR', { weekday: 'short' }).split(',')[0];
                 const row = document.createElement('tr');
-                row.innerHTML = `<td class="px-6 py-4">${date}</td><td class="px-6 py-4">${ins.join(', ')}</td><td class="px-6 py-4">${outs.join(', ')}</td><td class="px-6 py-4 font-medium ${balanceClass}">${balanceText}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><button class="request-btn cursor-pointer" data-date="${date}">${requestIcon}</button><span class="text-xs font-medium ${statusColor}">${statusText}</span></div></td>`;
+                row.innerHTML = `<td class="px-6 py-4 whitespace-nowrap">${date} <span class="text-gray-500 text-xs">${dayName}</span></td><td class="px-6 py-4">${ins.join(', ')}</td><td class="px-6 py-4">${outs.join(', ')}</td><td class="px-6 py-4 font-medium ${balanceClass}">${balanceText}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><button class="request-btn cursor-pointer" data-date="${date}">${requestIcon}</button><span class="text-xs font-medium ${statusColor}">${statusText}</span></div></td>`;
                 const requestBtn = row.querySelector('.request-btn');
                 requestBtn.addEventListener('click', (event) => openRequestModal(date, event.currentTarget));
                 ui.historyTableBody.appendChild(row);
@@ -364,7 +381,7 @@
             }
 
             ui.accumulatedBalanceSpan.textContent = formatMilliseconds(totalMonthlyBalanceMs, true);
-            ui.accumulatedBalanceSpan.className = `text-3xl font-bold ${totalMonthlyBalanceMs >= 0 ? 'text-green-600' : 'text-red-600'}`;
+            ui.accumulatedBalanceSpan.className = `text-3xl font-bold ${totalMonthlyBalanceMs === 0 ? 'text-gray-800' : totalMonthlyBalanceMs > 0 ? 'text-green-600' : 'text-red-600'}`;
         }
         
         function openRequestModal(date, buttonElement) {
@@ -372,17 +389,6 @@
             ui.request.title.textContent = `Enviar Solicitação para ${date}`;
             ui.request.text.value = '';
             ui.request.msg.textContent = '';
-
-            // Reseta o ícone e o texto para o estado inicial ao abrir o modal
-            if (buttonElement) {
-                buttonElement.innerHTML = `<svg class="w-6 h-6 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`;
-                const statusSpan = buttonElement.nextElementSibling;
-                if (statusSpan) {
-                    statusSpan.textContent = '';
-                    statusSpan.className = 'text-xs font-medium';
-                }
-            }
-
             ui.request.modal.style.display = 'flex';
         }
         
