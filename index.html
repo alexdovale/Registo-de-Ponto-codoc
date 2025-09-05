@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
+        body { font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 10vh; }
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
         .modal-content { background-color: #fefefe; margin: auto; padding: 2rem; border-radius: 0.5rem; width: 90%; max-width: 500px; }
         main { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
@@ -28,7 +28,6 @@
 <body class="bg-gray-100">
 
     <main class="py-12 px-4">
-        <!-- Tela de Login -->
         <div id="login-screen" class="w-full max-w-md">
             <div class="bg-white p-8 rounded-lg shadow-md space-y-6">
                 <div class="flex flex-col items-center">
@@ -46,7 +45,6 @@
             </div>
         </div>
 
-        <!-- Tela Principal do Ponto -->
         <div id="app-screen" class="hidden w-full max-w-6xl">
             <div class="bg-white p-4 sm:p-8 rounded-lg shadow-md space-y-6">
                 <div class="flex flex-wrap justify-between items-center gap-4">
@@ -114,7 +112,6 @@
         </div>
     </footer>
 
-    <!-- Modals -->
     <div id="forgot-password-modal" class="modal">
         <div class="modal-content"><span id="close-forgot-modal-button" class="float-right text-2xl font-bold cursor-pointer">&times;</span><h3 class="text-lg font-medium mb-4">Redefinir Senha</h3><p class="text-sm text-gray-600 mb-4">Digite seu e-mail para receber um link de redefinição.</p><form id="forgot-password-form"><input id="forgot-email" type="email" required placeholder="Seu e-mail" class="w-full px-3 py-2 border rounded-md"><button type="submit" class="mt-4 w-full py-2 px-4 rounded-md text-white bg-green-600 hover:bg-green-700">Enviar Link</button></form><p id="modal-message" class="text-sm mt-4 text-center"></p></div>
     </div>
@@ -288,48 +285,71 @@
             }, {});
 
             let totalMonthlyBalanceMs = 0;
-            const sortedDays = Object.keys(entriesByDay).sort((a, b) => new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-')));
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
             
-            sortedDays.forEach(date => {
-                const dayEntries = entriesByDay[date];
+            // Cria um array de todas as datas do mês atual
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const allDaysInMonth = Array.from({ length: daysInMonth }, (_, i) => {
+                const day = i + 1;
+                const date = new Date(currentYear, currentMonth, day);
+                return date.toLocaleDateString('pt-BR');
+            });
+
+            // Para cada dia do mês, determina o status e o saldo
+            const allHistoryDays = Array.from(new Set([...Object.keys(entriesByDay), ...allDaysInMonth])).sort((a, b) => new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-')));
+            
+            allHistoryDays.forEach(date => {
+                const dayEntries = entriesByDay[date] || { ins: [], outs: [] };
                 const ins = dayEntries.ins.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
                 const outs = dayEntries.outs.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
                 
                 let balanceText = '---';
-                let balanceClass = 'text-yellow-500';
+                let balanceClass = 'text-gray-500';
+                let statusText = '', statusColor = '';
+                
+                const requestsForDay = requests.filter(r => r.date === date);
+                const approvedRequest = requestsForDay.find(r => r.status === 'approved');
+                const isWorkday = new Date(date.split('/').reverse().join('-')).getDay() !== 0 && new Date(date.split('/').reverse().join('-')).getDay() !== 6;
 
-                if (ins.length === outs.length && ins.length > 0) {
+                // Nova Lógica
+                if (approvedRequest) {
+                    statusText = 'Abonada';
+                    statusColor = 'text-green-500';
+                    balanceText = '00:00';
+                    balanceClass = 'text-green-600';
+                } else if (isWorkday && dayEntries.ins.length === 0 && dayEntries.outs.length === 0) {
+                    statusText = 'Falta';
+                    statusColor = 'text-red-500';
+                    balanceText = '-06:00';
+                    balanceClass = 'text-red-600';
+                    totalMonthlyBalanceMs -= (6 * 3600 * 1000);
+                } else if (dayEntries.ins.length === outs.length && ins.length > 0) {
                     let dailyWorkedMs = 0;
                     const sortedDayEntries = [...dayEntries.ins, ...dayEntries.outs].sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
                     for (let i = 0; i < sortedDayEntries.length - 1; i += 2) {
                         dailyWorkedMs += sortedDayEntries[i+1].timestamp.toMillis() - sortedDayEntries[i].timestamp.toMillis();
                     }
-
                     const dailyBalanceMs = dailyWorkedMs - (6 * 3600 * 1000);
                     const isTolerated = Math.abs(dailyBalanceMs) <= (15 * 60 * 1000);
-
+                    balanceText = isTolerated ? '00:00' : formatMilliseconds(dailyBalanceMs, true);
+                    balanceClass = isTolerated ? 'text-gray-800' : dailyBalanceMs > 0 ? 'text-green-600' : 'text-red-600';
                     if (!isTolerated) {
                         totalMonthlyBalanceMs += dailyBalanceMs;
                     }
-                    
-                    balanceText = isTolerated ? '00:00' : formatMilliseconds(dailyBalanceMs, true);
-                    balanceClass = isTolerated ? 'text-gray-800' : dailyBalanceMs > 0 ? 'text-green-600' : 'text-red-600';
+                } else {
+                    statusText = requestsForDay.some(r => r.status === 'pending') ? 'Pendente' : (requestsForDay.some(r => r.status === 'declined') ? 'Recusada' : '');
+                    statusColor = requestsForDay.some(r => r.status === 'pending') ? 'text-yellow-500' : 'text-red-500';
+                    balanceText = '--:--';
+                    balanceClass = 'text-gray-500';
                 }
 
-                const requestsForDay = requests.filter(r => r.date === date);
                 let requestIcon = `<svg class="w-6 h-6 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`;
-                let statusText = '', statusColor = '';
                 if (requestsForDay.length > 0) {
-                    if (requestsForDay.some(r => r.status === 'pending')) {
-                        statusText = 'Pendente'; statusColor = 'text-yellow-500';
-                    } else if (requestsForDay.some(r => r.status === 'declined')) {
-                        statusText = 'Recusada'; statusColor = 'text-red-500';
-                    } else {
-                        statusText = 'Aprovada'; statusColor = 'text-green-500';
-                    }
                     requestIcon = `<svg class="w-6 h-6 ${statusColor}" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>`;
                 }
-                
+
                 const row = document.createElement('tr');
                 row.innerHTML = `<td class="px-6 py-4">${date}</td><td class="px-6 py-4">${ins.join(', ')}</td><td class="px-6 py-4">${outs.join(', ')}</td><td class="px-6 py-4 font-medium ${balanceClass}">${balanceText}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><button class="request-btn cursor-pointer" data-date="${date}">${requestIcon}</button><span class="text-xs font-medium ${statusColor}">${statusText}</span></div></td>`;
                 const requestBtn = row.querySelector('.request-btn');
