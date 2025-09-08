@@ -60,7 +60,7 @@
                 <div id="ip-error-message" class="hidden p-4 text-center bg-red-100 text-red-700 rounded-lg"></div>
                 <div id="daily-limit-message" class="hidden p-4 text-center bg-green-100 text-green-700 rounded-lg">O registo de ponto para hoje já foi concluído.</div>
                 <div class="text-center p-4 bg-gray-50 rounded-lg">
-                    <p class="text-sm font-medium text-gray-500">SALDO GERAL DE HORAS (MÊS ATUAL)</p>
+                    <p class="text-sm font-medium text-gray-500">SALDO DE HORAS DO MÊS</p>
                     <p id="accumulated-balance" class="text-3xl font-bold text-gray-800">--:--</p>
                 </div>
                 <div class="grid md:grid-cols-2 gap-6 items-center">
@@ -81,7 +81,15 @@
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-lg font-medium">Histórico de Registros</h3>
+                    <div class="flex flex-wrap items-center justify-between mt-6 mb-2">
+                        <h3 class="text-lg font-medium">Histórico de Registros</h3>
+                        <div class="flex items-center gap-2">
+                            <label for="year-select" class="text-sm font-medium text-gray-700">Ano:</label>
+                            <select id="year-select" class="p-1 border rounded-md bg-gray-50 focus:ring-green-500 focus:border-green-500"></select>
+                            <label for="month-select" class="text-sm font-medium text-gray-700">Mês:</label>
+                            <select id="month-select" class="p-1 border rounded-md bg-gray-50 focus:ring-green-500 focus:border-green-500"></select>
+                        </div>
+                    </div>
                     <div class="mt-4 overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -95,7 +103,7 @@
                             </thead>
                             <tbody id="history-table-body" class="bg-white divide-y divide-gray-200"></tbody>
                         </table>
-                        <p id="no-history-message" class="text-center py-4 text-gray-500 hidden">Nenhum registo encontrado.</p>
+                        <p id="no-history-message" class="text-center py-4 text-gray-500 hidden">Nenhum registo encontrado para o período selecionado.</p>
                     </div>
                 </div>
             </div>
@@ -157,13 +165,16 @@
             currentTimeSpan: document.getElementById('current-time'), accumulatedBalanceSpan: document.getElementById('accumulated-balance'),
             totalWorkedSpan: document.getElementById('total-worked'), dailyBalanceSpan: document.getElementById('daily-balance'),
             historyTableBody: document.getElementById('history-table-body'), noHistoryMessage: document.getElementById('no-history-message'),
+            monthSelect: document.getElementById('month-select'), yearSelect: document.getElementById('year-select'),
             forgot: { modal: document.getElementById('forgot-password-modal'), link: document.getElementById('forgot-password-link'), close: document.getElementById('close-forgot-modal-button'), form: document.getElementById('forgot-password-form'), email: document.getElementById('forgot-email'), msg: document.getElementById('modal-message') },
             request: { modal: document.getElementById('request-modal'), title: document.getElementById('request-modal-title'), close: document.getElementById('close-request-modal-button'), form: document.getElementById('request-form'), text: document.getElementById('request-text'), msg: document.getElementById('request-modal-message') }
         };
 
-        let unsubscribe = { entries: null, requests: null };
+        let unsubscribe = { entries: null };
         let isIpAllowed = false;
         let currentRequestDate = null;
+        let allEntries = [], allRequests = [];
+        let selectorsInitialized = false;
         
         async function verifyUserIp() {
             try {
@@ -195,7 +206,7 @@
                 ui.loginScreen.style.display = 'block';
                 ui.appScreen.style.display = 'none';
                 if (unsubscribe.entries) unsubscribe.entries();
-                if (unsubscribe.requests) unsubscribe.requests();
+                selectorsInitialized = false;
             }
         });
 
@@ -209,20 +220,85 @@
             
             if (unsubscribe.entries) unsubscribe.entries();
             unsubscribe.entries = onSnapshot(entriesQuery, (snapshot) => {
-                const entries = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
-                if (unsubscribe.requests) unsubscribe.requests();
-                unsubscribe.requests = onSnapshot(requestsQuery, (reqSnapshot) => {
-                    const requests = reqSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                    renderAll(entries, requests);
+                allEntries = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
+                
+                // Fetch requests whenever entries update to keep them in sync
+                getDocs(requestsQuery).then(reqSnapshot => {
+                    allRequests = reqSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    renderApp();
                 });
             });
         }
-
-        function renderAll(entries, requests) {
-            const todayEntries = entries.filter(e => new Date(e.timestamp.toDate()).toDateString() === new Date().toDateString());
+        
+        function renderApp() {
+            // 1. Update daily summary (always today)
+            const todayEntries = allEntries.filter(e => new Date(e.timestamp.toDate()).toDateString() === new Date().toDateString());
             if (isIpAllowed) updateButtonState(todayEntries);
             calculateAndDisplayDailyBalance(todayEntries);
-            renderHistory(entries, requests);
+
+            // 2. Initialize month/year selectors once
+            if (!selectorsInitialized && allEntries.length > 0) {
+                populateYearSelector(allEntries);
+                ui.yearSelect.addEventListener('change', renderApp);
+                ui.monthSelect.addEventListener('change', renderApp);
+                selectorsInitialized = true;
+            }
+
+            // 3. Always update month selector based on selected year
+            if (selectorsInitialized) {
+                updateMonthSelector();
+            }
+
+            // 4. Render history for the selected period
+            renderHistory(allEntries, allRequests);
+        }
+
+        function populateYearSelector(entries) { // Renamed from populateSelectors
+            const availableYears = [...new Set(entries.map(e => e.timestamp.toDate().getFullYear()))].sort((a, b) => b - a);
+            
+            ui.yearSelect.innerHTML = availableYears.map(year => `<option value="${year}">${year}</option>`).join('');
+
+            const now = new Date();
+            // Set current year if available, otherwise the most recent one
+            const currentYear = now.getFullYear();
+            ui.yearSelect.value = availableYears.includes(currentYear) ? currentYear : (availableYears[0] || currentYear);
+            
+        }
+
+        function updateMonthSelector() {
+            const selectedYear = parseInt(ui.yearSelect.value);
+            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const previouslySelectedMonth = ui.monthSelect.value;
+
+            // Apenas meses que têm registros no ano selecionado
+            const availableMonthsWithEntries = [...new Set(
+                allEntries
+                    .filter(e => e.timestamp.toDate().getFullYear() === selectedYear)
+                    .map(e => e.timestamp.toDate().getMonth())
+            )];
+
+            const finalAvailableMonths = availableMonthsWithEntries
+                .filter(monthIndex => !(selectedYear === 2025 && monthIndex < 8)) // Mantém a regra para 2025
+                .sort((a, b) => a - b);
+
+            let monthOptionsHTML = finalAvailableMonths.map(monthIndex => {
+                return `<option value="${monthIndex}">${monthNames[monthIndex]}</option>`;
+            }).join('');
+
+            ui.monthSelect.innerHTML = monthOptionsHTML;
+
+            // Tenta restaurar a seleção anterior se possível e válida
+            if (finalAvailableMonths.includes(parseInt(previouslySelectedMonth))) {
+                ui.monthSelect.value = previouslySelectedMonth;
+            } else {
+                // Caso contrário, se for o ano atual, define para o mês atual, se for válido
+                const now = new Date();
+                if (selectedYear === now.getFullYear() && finalAvailableMonths.includes(now.getMonth())) {
+                    ui.monthSelect.value = now.getMonth();
+                } else if (finalAvailableMonths.length > 0) {
+                    ui.monthSelect.value = finalAvailableMonths[finalAvailableMonths.length - 1]; // Padrão para o mais recente
+                }
+            }
         }
 
         function updateButtonState(todayEntries) {
@@ -246,9 +322,8 @@
 
         function calculateAndDisplayDailyBalance(entries) {
             let workedMs = 0;
-            const todayEntries = entries.filter(e => new Date(e.timestamp.toDate()).toDateString() === new Date().toDateString());
-            const todayIns = todayEntries.filter(e => e.type === 'in').map(e => e.timestamp.toMillis());
-            const todayOuts = todayEntries.filter(e => e.type === 'out').map(e => e.timestamp.toMillis());
+            const todayIns = entries.filter(e => e.type === 'in').map(e => e.timestamp.toMillis());
+            const todayOuts = entries.filter(e => e.type === 'out').map(e => e.timestamp.toMillis());
 
             for (let i = 0; i < Math.min(todayIns.length, todayOuts.length); i++) {
                 workedMs += todayOuts[i] - todayIns[i];
@@ -269,43 +344,49 @@
         
         function parseDateFromPTBR(dateString) {
             const [day, month, year] = dateString.split('/').map(Number);
-            // O mês no objeto Date do JavaScript é baseado em zero (0 para janeiro).
-            // Usar o meio-dia (12) para a hora evita que mudanças de fuso horário alterem o dia.
             return new Date(year, month - 1, day, 12);
         }
 
         function renderHistory(entries, requests) {
             ui.historyTableBody.innerHTML = '';
+            
+            if (!selectorsInitialized) return; // Don't render if selectors are not ready
+
+            const selectedYear = parseInt(ui.yearSelect.value);
+            const selectedMonth = parseInt(ui.monthSelect.value);
 
             const entriesByDay = entries.reduce((acc, entry) => {
-                const date = entry.timestamp.toDate().toLocaleDateString('pt-BR');
-                if (!acc[date]) {
-                    acc[date] = { ins: [], outs: [], allEntries: [] };
-                }
-                acc[date].allEntries.push(entry);
-                if (entry.type === 'in') {
-                    acc[date].ins.push(entry);
-                } else if (entry.type === 'out') {
-                    acc[date].outs.push(entry);
+                const entryDate = entry.timestamp.toDate();
+                if(entryDate.getFullYear() === selectedYear && entryDate.getMonth() === selectedMonth) {
+                    const date = entryDate.toLocaleDateString('pt-BR');
+                    if (!acc[date]) {
+                        acc[date] = { ins: [], outs: [], allEntries: [] };
+                    }
+                    acc[date].allEntries.push(entry);
+                    if (entry.type === 'in') acc[date].ins.push(entry);
+                    else if (entry.type === 'out') acc[date].outs.push(entry);
                 }
                 return acc;
             }, {});
 
             let totalMonthlyBalanceMs = 0;
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const currentMonth = today.getMonth();
-            const currentYear = today.getFullYear();
-
-            // Crie um conjunto de datas para exibir: todos os dias com entradas + todos os dias do início do mês até hoje
+            
             const datesToShow = new Set(Object.keys(entriesByDay));
-            const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-            for (let d = new Date(firstDayOfMonth); d <= today; d.setDate(d.getDate() + 1)) {
+            const today = new Date();
+            const firstDayOfMonth = new Date(selectedYear, selectedMonth, 1);
+            const lastDayOfMonth = new Date(selectedYear, selectedMonth + 1, 0);
+            
+            let loopEndDate = lastDayOfMonth;
+            if (selectedYear === today.getFullYear() && selectedMonth === today.getMonth()) {
+                loopEndDate = today; // Only show up to today for the current month
+            }
+            
+            for (let d = new Date(firstDayOfMonth); d <= loopEndDate; d.setDate(d.getDate() + 1)) {
                 datesToShow.add(new Date(d).toLocaleDateString('pt-BR'));
             }
 
             const allHistoryDays = Array.from(datesToShow)
-                .sort((a, b) => parseDateFromPTBR(b) - parseDateFromPTBR(a)); // Ordenar em ordem decrescente
+                .sort((a, b) => parseDateFromPTBR(b) - parseDateFromPTBR(a)); 
 
             allHistoryDays.forEach(date => {
                 const dateObj = parseDateFromPTBR(date);
@@ -314,8 +395,7 @@
                 const ins = dayEntries.ins.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
                 const outs = dayEntries.outs.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
                 
-                let balanceText = '---';
-                let balanceClass = 'text-gray-500';
+                let balanceText = '---', balanceClass = 'text-gray-500';
                 let statusText = '', statusColor = '';
                 
                 const requestsForDay = requests.filter(r => r.date === date);
@@ -323,13 +403,10 @@
                 const dayOfWeek = dateObj.getDay();
                 const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
                 const isWorkday = !isWeekend;
-                const isToday = dateObj.toDateString() === today.toDateString();
+                const isPast = dateObj < today.setHours(0,0,0,0);
 
                 if (approvedRequest) {
-                    statusText = 'Abonada';
-                    statusColor = 'text-green-500';
-                    balanceText = '00:00';
-                    balanceClass = 'text-green-600';
+                    statusText = 'Abonada'; statusColor = 'text-green-500'; balanceText = '00:00'; balanceClass = 'text-green-600';
                 } else if (dayEntries.ins.length > 0 && dayEntries.ins.length === dayEntries.outs.length) {
                     let dailyWorkedMs = 0;
                     const sortedIns = dayEntries.ins.sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis());
@@ -341,56 +418,34 @@
                     const isTolerated = Math.abs(dailyBalanceMs) <= (15 * 60 * 1000);
                     balanceText = isTolerated ? '00:00' : formatMilliseconds(dailyBalanceMs, true);
                     balanceClass = isTolerated ? 'text-gray-800' : dailyBalanceMs > 0 ? 'text-green-600' : 'text-red-600';
-                    if (!isTolerated && dateObj.getMonth() === currentMonth && dateObj.getFullYear() === currentYear) {
-                        totalMonthlyBalanceMs += dailyBalanceMs;
-                    }
+                    if (!isTolerated) totalMonthlyBalanceMs += dailyBalanceMs;
                 } else if (dayEntries.ins.length > 0 && dayEntries.ins.length > dayEntries.outs.length) {
-                    statusText = 'Em andamento';
-                    statusColor = 'text-blue-500';
-                    balanceText = '---';
-                    balanceClass = 'text-gray-500';
-                } else if (isWorkday && !isToday && dayEntries.ins.length === 0) {
-                    statusText = 'Falta';
-                    statusColor = 'text-red-500';
-                    balanceText = '-06:00';
-                    balanceClass = 'text-red-600';
-                    if (dateObj.getMonth() === currentMonth && dateObj.getFullYear() === currentYear) {
-                        totalMonthlyBalanceMs -= (6 * 3600 * 1000);
-                    }
+                    statusText = 'Em andamento'; statusColor = 'text-blue-500'; balanceText = '---'; balanceClass = 'text-gray-500';
+                } else if (isWorkday && isPast && dayEntries.ins.length === 0) {
+                    statusText = 'Falta'; statusColor = 'text-red-500'; balanceText = '-06:00'; balanceClass = 'text-red-600';
+                    totalMonthlyBalanceMs -= (6 * 3600 * 1000);
                 } else if (isWeekend && dayEntries.ins.length === 0) {
                     balanceText = '';
                 } else {
                     const pendingRequest = requestsForDay.find(r => r.status === 'pending');
                     const declinedRequest = requestsForDay.find(r => r.status === 'declined');
-
-                    if (pendingRequest) {
-                        statusText = 'Pendente';
-                        statusColor = 'text-yellow-500';
-                    } else if (declinedRequest) {
-                        statusText = 'Recusada';
-                        statusColor = 'text-red-500';
-                    } else if (!isToday && isWorkday) {
-                        statusText = 'Incompleto';
-                        statusColor = 'text-orange-500';
-                    }
-                    balanceText = '--:--';
-                    balanceClass = 'text-gray-500';
+                    if (pendingRequest) { statusText = 'Pendente'; statusColor = 'text-yellow-500'; } 
+                    else if (declinedRequest) { statusText = 'Recusada'; statusColor = 'text-red-500'; } 
+                    else if (isPast && isWorkday) { statusText = 'Incompleto'; statusColor = 'text-orange-500'; }
+                    balanceText = '--:--'; balanceClass = 'text-gray-500';
                 }
 
                 let requestIcon = `<svg class="w-6 h-6 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`;
-                if (requestsForDay.length > 0) {
-                    requestIcon = `<svg class="w-6 h-6 ${statusColor}" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>`;
-                }
+                if (requestsForDay.length > 0) { requestIcon = `<svg class="w-6 h-6 ${statusColor}" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>`; }
                 
-                const dayName = dateObj.toLocaleDateString('pt-BR', { weekday: 'long' });
+                const dayName = dateObj.toLocaleDateString('pt-BR', { weekday: 'short' });
                 const row = document.createElement('tr');
                 row.innerHTML = `<td class="px-6 py-4 whitespace-nowrap">${date} <span class="text-gray-500 text-xs capitalize">${dayName}</span></td><td class="px-6 py-4">${ins.join(', ')}</td><td class="px-6 py-4">${outs.join(', ')}</td><td class="px-6 py-4 font-medium ${balanceClass}">${balanceText}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><button class="request-btn cursor-pointer" data-date="${date}">${requestIcon}</button><span class="text-xs font-medium ${statusColor}">${statusText}</span></div></td>`;
-                const requestBtn = row.querySelector('.request-btn');
-                requestBtn.addEventListener('click', (event) => openRequestModal(date, event.currentTarget));
+                row.querySelector('.request-btn').addEventListener('click', (event) => openRequestModal(date, event.currentTarget));
                 ui.historyTableBody.appendChild(row);
             });
 
-            if (ui.historyTableBody.children.length === 0) {
+            if (allHistoryDays.length === 0) {
                  ui.noHistoryMessage.classList.remove('hidden');
             } else {
                  ui.noHistoryMessage.classList.add('hidden');
@@ -412,11 +467,8 @@
             e.preventDefault();
             const user = auth.currentUser;
             if (!user || !currentRequestDate) return;
-
-            const requestsRef = collection(db, `/artifacts/${appId}/requests`);
-            
             try {
-                await addDoc(requestsRef, { userId: user.uid, userName: ui.userNameSpan.textContent, date: currentRequestDate, text: ui.request.text.value, status: 'pending', createdAt: Timestamp.now() });
+                await addDoc(collection(db, `/artifacts/${appId}/requests`), { userId: user.uid, userName: ui.userNameSpan.textContent, date: currentRequestDate, text: ui.request.text.value, status: 'pending', createdAt: Timestamp.now() });
                 ui.request.msg.textContent = 'Solicitação enviada com sucesso!';
                 ui.request.msg.className = 'text-sm mt-4 text-center text-green-600';
                 setTimeout(() => ui.request.modal.style.display = 'none', 1500);
@@ -452,17 +504,13 @@
             if (!user) return; 
             const btn = type === 'in' ? ui.clockInButton : ui.clockOutButton; 
             btn.disabled = true; 
-
             addDoc(collection(db, `/artifacts/${appId}/users/${user.uid}/time_entries`), { 
-                type, 
-                timestamp: Timestamp.now(), 
-                userId: user.uid 
+                type, timestamp: Timestamp.now(), userId: user.uid 
             }).catch(() => btn.disabled = false); 
         }
         function formatMilliseconds(ms, neg = false) { const s = ms < 0 ? '-' : ''; if(neg) ms=Math.abs(ms); else if(ms<0) ms=0; const t = Math.floor(ms/1000); const h = Math.floor(t/3600); const m = Math.floor((t%3600)/60); return `${s}${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; }
     </script>
 </body>
 </html>
-
 
 
