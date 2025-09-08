@@ -381,9 +381,9 @@
             allHistoryDays.forEach(date => {
                 const dateObj = parseDateFromPTBR(date);
                 
-                const dayEntries = entriesByDay[date] || { ins: [], outs: [] };
-                const ins = dayEntries.ins.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
-                const outs = dayEntries.outs.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+                let dayEntries = entriesByDay[date] || { ins: [], outs: [] };
+                let ins = dayEntries.ins.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+                let outs = dayEntries.outs.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
                 
                 let balanceText = '---', balanceClass = 'text-gray-500';
                 let statusText = '', statusColor = '';
@@ -415,7 +415,15 @@
                     statusText = 'Falta'; statusColor = 'text-red-500'; balanceText = '-06:00'; balanceClass = 'text-red-600';
                     totalMonthlyBalanceMs -= (6 * 3600 * 1000);
                 } else if (isWeekend && dayEntries.ins.length === 0) {
-                    balanceText = ''; statusText = '';
+                    balanceText = '';
+                    statusText = '';
+                    if (dayOfWeek === 0) { // Sunday
+                        ins = ['<span class="text-gray-500">Domingo</span>'];
+                        outs = ['<span class="text-gray-500">Domingo</span>'];
+                    } else if (dayOfWeek === 6) { // Saturday
+                        ins = ['<span class="text-gray-500">Sábado</span>'];
+                        outs = ['<span class="text-gray-500">Sábado</span>'];
+                    }
                 } else {
                     const pendingRequest = requestsForDay.find(r => r.status === 'pending');
                     const declinedRequest = requestsForDay.find(r => r.status === 'declined');
