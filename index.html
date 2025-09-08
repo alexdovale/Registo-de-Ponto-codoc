@@ -222,7 +222,6 @@
             unsubscribe.entries = onSnapshot(entriesQuery, (snapshot) => {
                 allEntries = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
                 
-                // Fetch requests whenever entries update to keep them in sync
                 getDocs(requestsQuery).then(reqSnapshot => {
                     allRequests = reqSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                     renderApp();
@@ -231,12 +230,10 @@
         }
         
         function renderApp() {
-            // 1. Update daily summary (always today)
             const todayEntries = allEntries.filter(e => new Date(e.timestamp.toDate()).toDateString() === new Date().toDateString());
             if (isIpAllowed) updateButtonState(todayEntries);
             calculateAndDisplayDailyBalance(todayEntries);
 
-            // 2. Initialize month/year selectors once
             if (!selectorsInitialized && allEntries.length > 0) {
                 populateYearSelector(allEntries);
                 ui.yearSelect.addEventListener('change', renderApp);
@@ -244,25 +241,21 @@
                 selectorsInitialized = true;
             }
 
-            // 3. Always update month selector based on selected year
             if (selectorsInitialized) {
                 updateMonthSelector();
             }
 
-            // 4. Render history for the selected period
             renderHistory(allEntries, allRequests);
         }
 
-        function populateYearSelector(entries) { // Renamed from populateSelectors
+        function populateYearSelector(entries) {
             const availableYears = [...new Set(entries.map(e => e.timestamp.toDate().getFullYear()))].sort((a, b) => b - a);
             
             ui.yearSelect.innerHTML = availableYears.map(year => `<option value="${year}">${year}</option>`).join('');
 
             const now = new Date();
-            // Set current year if available, otherwise the most recent one
             const currentYear = now.getFullYear();
             ui.yearSelect.value = availableYears.includes(currentYear) ? currentYear : (availableYears[0] || currentYear);
-            
         }
 
         function updateMonthSelector() {
@@ -270,7 +263,6 @@
             const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
             const previouslySelectedMonth = ui.monthSelect.value;
 
-            // Apenas meses que têm registros no ano selecionado
             const availableMonthsWithEntries = [...new Set(
                 allEntries
                     .filter(e => e.timestamp.toDate().getFullYear() === selectedYear)
@@ -278,7 +270,7 @@
             )];
 
             const finalAvailableMonths = availableMonthsWithEntries
-                .filter(monthIndex => !(selectedYear === 2025 && monthIndex < 8)) // Mantém a regra para 2025
+                .filter(monthIndex => !(selectedYear === 2025 && monthIndex < 8))
                 .sort((a, b) => a - b);
 
             let monthOptionsHTML = finalAvailableMonths.map(monthIndex => {
@@ -287,16 +279,14 @@
 
             ui.monthSelect.innerHTML = monthOptionsHTML;
 
-            // Tenta restaurar a seleção anterior se possível e válida
             if (finalAvailableMonths.includes(parseInt(previouslySelectedMonth))) {
                 ui.monthSelect.value = previouslySelectedMonth;
             } else {
-                // Caso contrário, se for o ano atual, define para o mês atual, se for válido
                 const now = new Date();
                 if (selectedYear === now.getFullYear() && finalAvailableMonths.includes(now.getMonth())) {
                     ui.monthSelect.value = now.getMonth();
                 } else if (finalAvailableMonths.length > 0) {
-                    ui.monthSelect.value = finalAvailableMonths[finalAvailableMonths.length - 1]; // Padrão para o mais recente
+                    ui.monthSelect.value = finalAvailableMonths[finalAvailableMonths.length - 1];
                 }
             }
         }
@@ -350,7 +340,7 @@
         function renderHistory(entries, requests) {
             ui.historyTableBody.innerHTML = '';
             
-            if (!selectorsInitialized) return; // Don't render if selectors are not ready
+            if (!selectorsInitialized || !ui.yearSelect.value || !ui.monthSelect.value) return;
 
             const selectedYear = parseInt(ui.yearSelect.value);
             const selectedMonth = parseInt(ui.monthSelect.value);
@@ -378,7 +368,7 @@
             
             let loopEndDate = lastDayOfMonth;
             if (selectedYear === today.getFullYear() && selectedMonth === today.getMonth()) {
-                loopEndDate = today; // Only show up to today for the current month
+                loopEndDate = today;
             }
             
             for (let d = new Date(firstDayOfMonth); d <= loopEndDate; d.setDate(d.getDate() + 1)) {
@@ -425,7 +415,7 @@
                     statusText = 'Falta'; statusColor = 'text-red-500'; balanceText = '-06:00'; balanceClass = 'text-red-600';
                     totalMonthlyBalanceMs -= (6 * 3600 * 1000);
                 } else if (isWeekend && dayEntries.ins.length === 0) {
-                    balanceText = '';
+                    balanceText = ''; statusText = '';
                 } else {
                     const pendingRequest = requestsForDay.find(r => r.status === 'pending');
                     const declinedRequest = requestsForDay.find(r => r.status === 'declined');
@@ -512,5 +502,4 @@
     </script>
 </body>
 </html>
-
 
