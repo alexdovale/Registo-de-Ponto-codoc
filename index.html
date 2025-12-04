@@ -156,7 +156,7 @@
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, onSnapshot, doc, getDoc, Timestamp, setLogLevel, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // ----- INFORMAÇÕES DE CONFIGURAÇÃO (ATUALIZADAS COM SEUS DADOS) -----
+        // ----- INFORMAÇÕES DE CONFIGURAÇÃO -----
         const allowedIps = ["201.33.168.237", "138.204.67.94"];
         const appId = "1:582643132528:web:2d489ae3c23786152a2cb5";
         const firebaseConfig = {
@@ -168,6 +168,12 @@
             appId: "1:582643132528:web:2d489ae3c23786152a2cb5",
             measurementId: "G-E1SLMCBYZV"
         };
+        
+        // --- CONSTANTES DE JORNADA E TOLERÂNCIA ---
+        const WORKDAY_HOURS = 6;
+        const WORKDAY_MS = WORKDAY_HOURS * 3600 * 1000;
+        const TOLERANCE_MINUTES = 15;
+        const TOLERANCE_MS = TOLERANCE_MINUTES * 60 * 1000;
         
         let app, auth, db;
         try { 
@@ -187,7 +193,7 @@
             logoutButton: document.getElementById('logout-button'), clockInButton: document.getElementById('clock-in-button'),
             clockOutButton: document.getElementById('clock-out-button'), headerDateSpan: document.getElementById('header-date'),
             currentTimeSpan: document.getElementById('current-time'), accumulatedBalanceSpan: document.getElementById('accumulated-balance'),
-            grandTotalBalanceSpan: document.getElementById('grand-total-balance'), // NOVO
+            grandTotalBalanceSpan: document.getElementById('grand-total-balance'),
             totalWorkedSpan: document.getElementById('total-worked'), dailyBalanceSpan: document.getElementById('daily-balance'),
             historyTableBody: document.getElementById('history-table-body'), noHistoryMessage: document.getElementById('no-history-message'),
             monthSelect: document.getElementById('month-select'), yearSelect: document.getElementById('year-select'),
@@ -201,7 +207,6 @@
         let allEntries = [], allRequests = [];
         let selectorsInitialized = false;
         
-        // Função movida para o escopo global do módulo
         function parseDateFromPTBR(dateString) {
             const [day, month, year] = dateString.split('/').map(Number);
             return new Date(year, month - 1, day, 12);
@@ -265,12 +270,11 @@
         }
         
         function renderApp() {
-            if (!auth.currentUser) return; // Don't render if logged out
+            if (!auth.currentUser) return; 
             const todayEntries = allEntries.filter(e => new Date(e.timestamp.toDate()).toDateString() === new Date().toDateString());
             if (isIpAllowed) updateButtonState(todayEntries);
             calculateAndDisplayDailyBalance(todayEntries);
             
-            // Calcula e exibe o saldo total geral
             calculateAndDisplayGrandTotal(allEntries, allRequests);
 
             if (!selectorsInitialized && allEntries.length > 0) {
@@ -349,6 +353,17 @@
             }
         }
 
+        // --- FUNÇÃO AUXILIAR PARA CÁLCULO DE SALDO COM TOLERÂNCIA ---
+        // Se a diferença (positiva ou negativa) for <= 15 minutos, retorna 0 (abonado/tolerado).
+        // Se for > 15 minutos, retorna o valor total (atraso ou extra cheio).
+        function getAdjustedBalance(workedMs) {
+            const rawBalance = workedMs - WORKDAY_MS;
+            if (Math.abs(rawBalance) <= TOLERANCE_MS) {
+                return 0;
+            }
+            return rawBalance;
+        }
+
         function calculateAndDisplayDailyBalance(entries) {
             let workedMs = 0;
             const todayIns = entries.filter(e => e.type === 'in').map(e => e.timestamp.toMillis());
@@ -361,17 +376,17 @@
             ui.totalWorkedSpan.textContent = formatMilliseconds(workedMs);
 
             if (todayIns.length > 0 && todayIns.length === todayOuts.length) {
-                const balanceMs = workedMs - (6 * 3600 * 1000);
-                const isTolerated = Math.abs(balanceMs) <= (15 * 60 * 1000);
-                ui.dailyBalanceSpan.textContent = isTolerated ? '00:00' : formatMilliseconds(balanceMs, true);
-                ui.dailyBalanceSpan.className = `text-lg sm:text-xl font-bold ${isTolerated ? 'text-gray-800' : balanceMs > 0 ? 'text-green-600' : 'text-red-600'}`;
+                // Usa a nova função centralizada
+                const balanceMs = getAdjustedBalance(workedMs);
+                
+                ui.dailyBalanceSpan.textContent = balanceMs === 0 ? '00:00' : formatMilliseconds(balanceMs, true);
+                ui.dailyBalanceSpan.className = `text-lg sm:text-xl font-bold ${balanceMs === 0 ? 'text-gray-800' : balanceMs > 0 ? 'text-green-600' : 'text-red-600'}`;
             } else {
                 ui.dailyBalanceSpan.textContent = '---';
                 ui.dailyBalanceSpan.className = 'text-lg sm:text-xl font-bold text-gray-800';
             }
         }
         
-        // NOVA FUNÇÃO: Calcula o saldo total de todos os meses
         function calculateAndDisplayGrandTotal(entries, requests) {
             let grandTotalMs = 0;
             const today = new Date();
@@ -425,7 +440,6 @@
                 if (year === today.getFullYear() && month === today.getMonth()) {
                     loopEndDate = today;
                 }
-                // Garante que não vamos além de hoje
                 if (loopEndDate > today) loopEndDate = today;
 
                 for (let d = new Date(firstDay); d <= loopEndDate; d.setDate(d.getDate() + 1)) {
@@ -436,11 +450,9 @@
                 datesInMonth.forEach(date => {
                     const dateObj = parseDateFromPTBR(date);
                     
-                    // Pula se não for deste mês (pode acontecer por causa do Set)
                     if (dateObj.getFullYear() !== year || dateObj.getMonth() !== month) {
                         return;
                     }
-                    // Pula se for futuro
                     if (dateObj > today) return; 
 
                     const dayEntries = entriesByDay[date] || { ins: [], outs: [] };
@@ -453,31 +465,26 @@
                     if (isApproved) {
                         // Abonada, saldo 0
                     } else if (dayEntries.ins.length > 0 && dayEntries.ins.length === dayEntries.outs.length) {
-                        // Dia com entradas e saídas completas
                         let dailyWorkedMs = 0;
                         const sortedIns = dayEntries.ins.sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis());
                         const sortedOuts = dayEntries.outs.sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis());
                         for (let i = 0; i < sortedIns.length; i++) {
                             dailyWorkedMs += sortedOuts[i].timestamp.toMillis() - sortedIns[i].timestamp.toMillis();
                         }
-                        const dailyBalanceMs = dailyWorkedMs - (6 * 3600 * 1000);
-                        const isTolerated = Math.abs(dailyBalanceMs) <= (15 * 60 * 1000);
                         
-                        if (!isTolerated) {
-                            totalMonthlyBalanceMs += dailyBalanceMs;
-                        }
+                        // USA A NOVA FUNÇÃO DE TOLERÂNCIA
+                        totalMonthlyBalanceMs += getAdjustedBalance(dailyWorkedMs);
+
                     } else if (isWorkday && dayEntries.ins.length === 0 && dayEntries.outs.length === 0) {
-                        // Falta (dia de semana, passado, sem registros e não abonado)
-                        totalMonthlyBalanceMs -= (6 * 3600 * 1000);
+                        // Falta: -6 horas (Não tem tolerância pois excede 15min)
+                        totalMonthlyBalanceMs -= WORKDAY_MS;
                     }
-                    // Entradas incompletas são ignoradas no saldo
                 });
 
                 grandTotalMs += totalMonthlyBalanceMs;
             }
 
-            // 7. Exibe o saldo total geral
-            if (ui.grandTotalBalanceSpan) { // Verifica se o elemento UI está pronto
+            if (ui.grandTotalBalanceSpan) { 
                 ui.grandTotalBalanceSpan.textContent = formatMilliseconds(grandTotalMs, true);
                 ui.grandTotalBalanceSpan.className = `text-3xl font-bold ${grandTotalMs === 0 ? 'text-gray-800' : grandTotalMs > 0 ? 'text-green-600' : 'text-red-600'}`;
             }
@@ -550,16 +557,19 @@
                     for (let i = 0; i < sortedIns.length; i++) {
                         dailyWorkedMs += sortedOuts[i].timestamp.toMillis() - sortedIns[i].timestamp.toMillis();
                     }
-                    const dailyBalanceMs = dailyWorkedMs - (6 * 3600 * 1000);
-                    const isTolerated = Math.abs(dailyBalanceMs) <= (15 * 60 * 1000);
-                    balanceText = isTolerated ? '00:00' : formatMilliseconds(dailyBalanceMs, true);
-                    balanceClass = isTolerated ? 'text-gray-800' : dailyBalanceMs > 0 ? 'text-green-600' : 'text-red-600';
-                    if (!isTolerated) totalMonthlyBalanceMs += dailyBalanceMs;
+                    
+                    // USA A NOVA FUNÇÃO DE TOLERÂNCIA
+                    const dailyBalanceMs = getAdjustedBalance(dailyWorkedMs);
+
+                    balanceText = dailyBalanceMs === 0 ? '00:00' : formatMilliseconds(dailyBalanceMs, true);
+                    balanceClass = dailyBalanceMs === 0 ? 'text-gray-800' : dailyBalanceMs > 0 ? 'text-green-600' : 'text-red-600';
+                    totalMonthlyBalanceMs += dailyBalanceMs;
+
                 } else if (dayEntries.ins.length > 0 && dayEntries.ins.length > dayEntries.outs.length) {
                     statusText = 'Em andamento'; statusColor = 'text-blue-500'; balanceText = '---'; balanceClass = 'text-gray-500';
                 } else if (isWorkday && isPast && dayEntries.ins.length === 0) {
                     statusText = 'Falta'; statusColor = 'text-red-500'; balanceText = '-06:00'; balanceClass = 'text-red-600';
-                    totalMonthlyBalanceMs -= (6 * 3600 * 1000);
+                    totalMonthlyBalanceMs -= WORKDAY_MS;
                 } else if (isWeekend && dayEntries.ins.length === 0) {
                     balanceText = '';
                     statusText = '';
@@ -696,4 +706,3 @@
     </script>
 </body>
 </html>
-
