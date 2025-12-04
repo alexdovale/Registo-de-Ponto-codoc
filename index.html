@@ -172,8 +172,9 @@
         // --- CONSTANTES DE JORNADA E TOLERÂNCIA ---
         const WORKDAY_HOURS = 6;
         const WORKDAY_MS = WORKDAY_HOURS * 3600 * 1000;
-        const TOLERANCE_MINUTES = 15;
-        const TOLERANCE_MS = TOLERANCE_MINUTES * 60 * 1000;
+        // A tolerância de 15 minutos implica que o desconto começa a partir dos 16 minutos.
+        // Usaremos 16 minutos como o "teto" exclusivo para a verificação.
+        const TOLERANCE_THRESHOLD_MS = 16 * 60 * 1000;
         
         let app, auth, db;
         try { 
@@ -354,11 +355,13 @@
         }
 
         // --- FUNÇÃO AUXILIAR PARA CÁLCULO DE SALDO COM TOLERÂNCIA ---
-        // Se a diferença (positiva ou negativa) for <= 15 minutos, retorna 0 (abonado/tolerado).
-        // Se for > 15 minutos, retorna o valor total (atraso ou extra cheio).
+        // Se a diferença (positiva ou negativa) for < 16 minutos, retorna 0 (abonado/tolerado).
+        // Se for >= 16 minutos, retorna o valor total (atraso ou extra cheio).
         function getAdjustedBalance(workedMs) {
             const rawBalance = workedMs - WORKDAY_MS;
-            if (Math.abs(rawBalance) <= TOLERANCE_MS) {
+            // Se o valor absoluto for MENOR que 16 minutos (ex: 15m 59s), zera.
+            // Se for IGUAL ou MAIOR que 16 minutos, cobra tudo.
+            if (Math.abs(rawBalance) < TOLERANCE_THRESHOLD_MS) {
                 return 0;
             }
             return rawBalance;
