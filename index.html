@@ -57,7 +57,10 @@
                     </div>
                     <button id="logout-button" class="px-4 py-2 text-sm font-medium text-green-600 bg-green-100 rounded-md hover:bg-green-200">Sair</button>
                 </div>
+                
                 <div id="ip-error-message" class="hidden p-4 text-center bg-red-100 text-red-700 rounded-lg"></div>
+                <!-- Nova mensagem para o bloqueio por dia da semana -->
+                <div id="day-error-message" class="hidden p-4 text-center bg-red-100 text-red-700 rounded-lg">O registro de ponto está disponível apenas às quartas-feiras para a sua rede atual.</div>
                 <div id="daily-limit-message" class="hidden p-4 text-center bg-green-100 text-green-700 rounded-lg">O registo de ponto para hoje já foi concluído.</div>
                 
                 <!-- Wrapper para os cards de saldo -->
@@ -157,7 +160,7 @@
         import { getFirestore, collection, addDoc, query, onSnapshot, doc, getDoc, Timestamp, setLogLevel, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ----- INFORMAÇÕES DE CONFIGURAÇÃO -----
-        const allowedIps = ["201.33.168.237", "138.204.67.94"];
+        const allowedIps = ["201.33.168.237", "138.204.67.94", "192.168.0.109"];
         const appId = "1:582643132528:web:2d489ae3c23786152a2cb5";
         const firebaseConfig = {
             apiKey: "AIzaSyBqWlyh2vo0I_gRWysG2NYdz0gvopRO3SI",
@@ -172,8 +175,6 @@
         // --- CONSTANTES DE JORNADA E TOLERÂNCIA ---
         const WORKDAY_HOURS = 6;
         const WORKDAY_MS = WORKDAY_HOURS * 3600 * 1000;
-        // A tolerância de 15 minutos implica que o desconto começa a partir dos 16 minutos.
-        // Usaremos 16 minutos como o "teto" exclusivo para a verificação.
         const TOLERANCE_THRESHOLD_MS = 16 * 60 * 1000;
         
         let app, auth, db;
@@ -189,7 +190,9 @@
         const ui = {
             loginScreen: document.getElementById('login-screen'), appScreen: document.getElementById('app-screen'),
             loginForm: document.getElementById('login-form'), loginError: document.getElementById('login-error'),
-            ipErrorMessage: document.getElementById('ip-error-message'), userNameSpan: document.getElementById('user-name'),
+            ipErrorMessage: document.getElementById('ip-error-message'), 
+            dayErrorMessage: document.getElementById('day-error-message'),
+            userNameSpan: document.getElementById('user-name'),
             dailyLimitMessage: document.getElementById('daily-limit-message'),
             logoutButton: document.getElementById('logout-button'), clockInButton: document.getElementById('clock-in-button'),
             clockOutButton: document.getElementById('clock-out-button'), headerDateSpan: document.getElementById('header-date'),
@@ -204,6 +207,7 @@
 
         let unsubscribe = { entries: null, requests: null };
         let isIpAllowed = false;
+        let currentUserIp = null; // Guardar o IP atual do utilizador
         let currentRequestDate = null;
         let allEntries = [], allRequests = [];
         let selectorsInitialized = false;
@@ -217,7 +221,8 @@
             try {
                 const response = await fetch('https://api.ipify.org?format=json');
                 const data = await response.json();
-                isIpAllowed = allowedIps.includes(data.ip);
+                currentUserIp = data.ip; // Atribui o IP atual
+                isIpAllowed = allowedIps.includes(currentUserIp);
                 ui.ipErrorMessage.classList.toggle('hidden', isIpAllowed);
                 if (!isIpAllowed) {
                     ui.ipErrorMessage.textContent = "Acesso negado. O registo de ponto é permitido apenas em redes autorizadas.";
@@ -225,6 +230,7 @@
                 }
             } catch (error) {
                 isIpAllowed = false;
+                currentUserIp = null;
                 ui.ipErrorMessage.textContent = "Não foi possível verificar a sua rede. O registo de ponto está desativado.";
                 ui.ipErrorMessage.classList.remove('hidden');
                 [ui.clockInButton, ui.clockOutButton].forEach(b => b.disabled = true);
@@ -273,9 +279,11 @@
         function renderApp() {
             if (!auth.currentUser) return; 
             const todayEntries = allEntries.filter(e => new Date(e.timestamp.toDate()).toDateString() === new Date().toDateString());
-            if (isIpAllowed) updateButtonState(todayEntries);
-            calculateAndDisplayDailyBalance(todayEntries);
             
+            // Sempre atualizar os botões, pois lida com o dia da semana e com a verificação de IP
+            updateButtonState(todayEntries);
+            
+            calculateAndDisplayDailyBalance(todayEntries);
             calculateAndDisplayGrandTotal(allEntries, allRequests);
 
             if (!selectorsInitialized && allEntries.length > 0) {
@@ -294,9 +302,7 @@
 
         function populateYearSelector(entries) {
             const availableYears = [...new Set(entries.map(e => e.timestamp.toDate().getFullYear()))].sort((a, b) => b - a);
-            
             ui.yearSelect.innerHTML = availableYears.map(year => `<option value="${year}">${year}</option>`).join('');
-
             const now = new Date();
             const currentYear = now.getFullYear();
             ui.yearSelect.value = availableYears.includes(currentYear) ? currentYear : (availableYears[0] || currentYear);
@@ -335,7 +341,28 @@
             }
         }
 
+        // Função de botões com controle do dia da semana (Apenas para o IP 192.168.0.109)
         function updateButtonState(todayEntries) {
+            const isWednesday = new Date().getDay() === 3;
+            const isRestrictedIp = currentUserIp === "192.168.0.109";
+            
+            let canRegister = isIpAllowed;
+
+            // Se for o IP restrito e NÃO for quarta-feira, ele bloqueia o acesso.
+            if (isRestrictedIp && !isWednesday) {
+                ui.dayErrorMessage.classList.remove('hidden');
+                canRegister = false;
+            } else {
+                ui.dayErrorMessage.classList.add('hidden');
+            }
+
+            if (!canRegister) {
+                ui.clockInButton.disabled = true;
+                ui.clockOutButton.disabled = true;
+                ui.dailyLimitMessage.classList.add('hidden');
+                return;
+            }
+
             const hasClockIn = todayEntries.some(e => e.type === 'in');
             const hasClockOut = todayEntries.some(e => e.type === 'out');
             
@@ -354,13 +381,8 @@
             }
         }
 
-        // --- FUNÇÃO AUXILIAR PARA CÁLCULO DE SALDO COM TOLERÂNCIA ---
-        // Se a diferença (positiva ou negativa) for < 16 minutos, retorna 0 (abonado/tolerado).
-        // Se for >= 16 minutos, retorna o valor total (atraso ou extra cheio).
         function getAdjustedBalance(workedMs) {
             const rawBalance = workedMs - WORKDAY_MS;
-            // Se o valor absoluto for MENOR que 16 minutos (ex: 15m 59s), zera.
-            // Se for IGUAL ou MAIOR que 16 minutos, cobra tudo.
             if (Math.abs(rawBalance) < TOLERANCE_THRESHOLD_MS) {
                 return 0;
             }
@@ -379,7 +401,6 @@
             ui.totalWorkedSpan.textContent = formatMilliseconds(workedMs);
 
             if (todayIns.length > 0 && todayIns.length === todayOuts.length) {
-                // Usa a nova função centralizada
                 const balanceMs = getAdjustedBalance(workedMs);
                 
                 ui.dailyBalanceSpan.textContent = balanceMs === 0 ? '00:00' : formatMilliseconds(balanceMs, true);
@@ -395,7 +416,6 @@
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            // 1. Agrupa solicitações aprovadas por data
             const approvedRequests = requests.reduce((acc, req) => {
                 if (req.status === 'approved') {
                     acc[req.date] = true;
@@ -403,7 +423,6 @@
                 return acc;
             }, {});
 
-            // 2. Agrupa entradas por Ano-Mês
             const entriesByMonth = entries.reduce((acc, entry) => {
                 const d = entry.timestamp.toDate();
                 const year = d.getFullYear();
@@ -416,14 +435,12 @@
                 return acc;
             }, {});
 
-            // 3. Itera sobre cada mês que tem entradas
             for (const key in entriesByMonth) {
                 const monthData = entriesByMonth[key];
                 let totalMonthlyBalanceMs = 0;
 
                 const { year, month, entries: monthEntries } = monthData;
 
-                // 4. Agrupa as entradas deste mês por dia
                 const entriesByDay = monthEntries.reduce((acc, entry) => {
                     const date = entry.timestamp.toDate().toLocaleDateString('pt-BR');
                     if (!acc[date]) {
@@ -434,7 +451,6 @@
                     return acc;
                 }, {});
 
-                // 5. Encontra todos os dias para verificar (dos registros e iterando)
                 const datesInMonth = new Set(Object.keys(entriesByDay));
                 const firstDay = new Date(year, month, 1);
                 const lastDay = new Date(year, month + 1, 0);
@@ -449,7 +465,6 @@
                     datesInMonth.add(new Date(d).toLocaleDateString('pt-BR'));
                 }
 
-                // 6. Itera sobre todos os dias a verificar neste mês
                 datesInMonth.forEach(date => {
                     const dateObj = parseDateFromPTBR(date);
                     
@@ -475,11 +490,9 @@
                             dailyWorkedMs += sortedOuts[i].timestamp.toMillis() - sortedIns[i].timestamp.toMillis();
                         }
                         
-                        // USA A NOVA FUNÇÃO DE TOLERÂNCIA
                         totalMonthlyBalanceMs += getAdjustedBalance(dailyWorkedMs);
 
                     } else if (isWorkday && dayEntries.ins.length === 0 && dayEntries.outs.length === 0) {
-                        // Falta: -6 horas (Não tem tolerância pois excede 15min)
                         totalMonthlyBalanceMs -= WORKDAY_MS;
                     }
                 });
@@ -561,7 +574,6 @@
                         dailyWorkedMs += sortedOuts[i].timestamp.toMillis() - sortedIns[i].timestamp.toMillis();
                     }
                     
-                    // USA A NOVA FUNÇÃO DE TOLERÂNCIA
                     const dailyBalanceMs = getAdjustedBalance(dailyWorkedMs);
 
                     balanceText = dailyBalanceMs === 0 ? '00:00' : formatMilliseconds(dailyBalanceMs, true);
@@ -696,7 +708,11 @@
         }
 
         function recordTime(type) { 
-            if (!isIpAllowed) return; 
+            const isWednesday = new Date().getDay() === 3;
+            const isRestrictedIp = currentUserIp === "192.168.0.109";
+
+            if (!isIpAllowed || (isRestrictedIp && !isWednesday)) return; 
+            
             const user = auth.currentUser; 
             if (!user) return; 
             const btn = type === 'in' ? ui.clockInButton : ui.clockOutButton; 
