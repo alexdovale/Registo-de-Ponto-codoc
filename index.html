@@ -157,7 +157,7 @@
         import { getFirestore, collection, addDoc, query, onSnapshot, doc, getDoc, Timestamp, setLogLevel, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ----- INFORMAÇÕES DE CONFIGURAÇÃO -----
-        const allowedIps = ["201.33.168.237", "138.204.67.94", "192.168.0.109", "162.120.185.249", "192.168.0.109", "192.168.1.12"];
+        const allowedIps = ["201.33.168.237", "138.204.67.94", "192.168.0.109", "162.120.185.249", "168.121.179.105"];
         const appId = "1:582643132528:web:2d489ae3c23786152a2cb5";
         const firebaseConfig = {
             apiKey: "AIzaSyBqWlyh2vo0I_gRWysG2NYdz0gvopRO3SI",
@@ -220,7 +220,7 @@
                 isIpAllowed = allowedIps.includes(data.ip);
                 ui.ipErrorMessage.classList.toggle('hidden', isIpAllowed);
                 if (!isIpAllowed) {
-                    ui.ipErrorMessage.textContent = "Acesso negado. O registo de ponto é permitido apenas em redes autorizadas.";
+                    ui.ipErrorMessage.textContent = `Acesso negado. O registo de ponto é permitido apenas em redes autorizadas. (O seu IP público atual detectado é: ${data.ip})`;
                     [ui.clockInButton, ui.clockOutButton].forEach(b => b.disabled = true);
                 }
             } catch (error) {
