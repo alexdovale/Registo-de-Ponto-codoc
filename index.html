@@ -347,7 +347,6 @@
         import { getFirestore, collection, onSnapshot, doc, getDoc, Timestamp, updateDoc, query, orderBy, getDocs, where, deleteDoc, setDoc, addDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // CONFIGURAÇÕES GERAIS
-        const allowedIps = ["201.33.168.237", "138.204.67.94", "192.168.0.109", "162.120.185.249", "168.121.179.105", "168.205.251.254", "186.223.178.136", "191.7.106.86", "191.7.106.98", "179.218.22.199" ];
         const appId = "1:582643132528:web:2d489ae3c23786152a2cb5";
         const firebaseConfig = {
             apiKey: "AIzaSyBqWlyh2vo0I_gRWysG2NYdz0gvopRO3SI",
@@ -497,6 +496,38 @@
         let allUserEntries = [], allUserRequestsData = [];
         let selectorsInitialized = false;
 
+        // --- VALIDAÇÃO DE IP VIA FIRESTORE ---
+        async function verifyUserIp() {
+            try {
+                // Busca o documento específico que você criou
+                const configDoc = await getDoc(doc(db, "config", "koKuUivlgLrfg9FL8Zlv"));
+                let allowedIps = [];
+                
+                if (configDoc.exists()) {
+                    allowedIps = configDoc.data().allowed_ips || [];
+                }
+
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                const userIp = data.ip;
+
+                isIpAllowed = allowedIps.includes(userIp);
+                
+                ui.ipErrorMessage.classList.toggle('hidden', isIpAllowed);
+                if (!isIpAllowed) {
+                    ui.ipErrorMessage.textContent = `Acesso negado. IP ${userIp} não autorizado.`;
+                    ui.clockInButton.disabled = true;
+                    ui.clockOutButton.disabled = true;
+                }
+                return isIpAllowed;
+            } catch (e) {
+                isIpAllowed = false;
+                ui.ipErrorMessage.textContent = "Erro ao validar rede de acesso.";
+                ui.ipErrorMessage.classList.remove('hidden');
+                return false;
+            }
+        }
+        
         // --- AUTH E ROTEAMENTO INICIAL ---
         ui.loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
