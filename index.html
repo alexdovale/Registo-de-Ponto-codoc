@@ -1,3 +1,5 @@
+--- START OF FILE Paste April 20, 2026 - 12:10PM ---
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -895,6 +897,19 @@
         // --- ÁREA DE FUNÇÕES: FUNCIONÁRIO (USER) ---
         function parseDateFromPTBR(dateString) { const [d, m, y] = dateString.split('/').map(Number); return new Date(y, m - 1, d, 12); }
         function formatMsUser(ms, neg = false) { const s = ms < 0 ? '-' : ''; if(neg) ms=Math.abs(ms); else if(ms<0) ms=0; const t = Math.floor(ms/1000); const h = Math.floor(t/3600); const m = Math.floor((t%3600)/60); return `${s}${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; }
+
+        // A função verifyUserIp foi movida para o início do script e não precisa ser duplicada aqui.
+        // Remove a função duplicada abaixo:
+        /*
+        async function verifyUserIp() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json'); const data = await response.json();
+                isIpAllowed = allowedIps.includes(data.ip);
+                ui.ipErrorMessage.classList.toggle('hidden', isIpAllowed);
+                if (!isIpAllowed) { ui.ipErrorMessage.textContent = `Acesso negado. Registo de ponto restrito a redes autorizadas. (IP: ${data.ip})`; [ui.clockInButton, ui.clockOutButton].forEach(b => b.disabled = true); }
+            } catch (e) { isIpAllowed = false; ui.ipErrorMessage.textContent = "Erro de rede. Registo de ponto desativado."; ui.ipErrorMessage.classList.remove('hidden'); [ui.clockInButton, ui.clockOutButton].forEach(b => b.disabled = true); }
+        }
+        */
 
         function listenToFirebaseUser(user) {
             if (!user) return;
