@@ -9,22 +9,74 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
-        .modal-content { background-color: #fefefe; margin: auto; padding: 2rem; border-radius: 0.5rem; width: 90%; max-width: 500px; position: relative; }
-        main { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #10B981; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .editable { cursor: pointer; }
-        .editable:hover { background-color: #f3f4f6; }
-        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+        }
+        .modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 100; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.6); 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .modal-content { 
+            background-color: #fefefe; 
+            margin: auto; 
+            padding: 2rem; 
+            border-radius: 0.5rem; 
+            width: 90%; 
+            max-width: 500px; 
+            position: relative; 
+        }
+        .modal-content.large { 
+            max-width: 800px; 
+        }
+        main { 
+            flex-grow: 1; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 100%; 
+        }
+        .loader { 
+            border: 4px solid #f3f3f3; 
+            border-top: 4px solid #10B981; 
+            border-radius: 50%; 
+            width: 40px; 
+            height: 40px; 
+            animation: spin 1s linear infinite; 
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+        .editable { 
+            cursor: pointer; 
+        }
+        .editable:hover { 
+            background-color: #f3f4f6; 
+        }
         /* Estilização para o seletor de tipo de acesso */
-        input[type="radio"]:checked + span { color: #10B981; font-weight: 700; }
-        label:has(input[type="radio"]:checked) { border-color: #10B981; background-color: #ECFDF5; }
+        input[type="radio"]:checked + span { 
+            color: #10B981; 
+            font-weight: 700; 
+        }
+        label:has(input[type="radio"]:checked) { 
+            border-color: #10B981; 
+            background-color: #ECFDF5; 
+        }
     </style>
 </head>
 <body class="bg-gray-100">
-
     <main class="py-12 px-4">
         <!-- TELA DE LOGIN UNIFICADA -->
         <div id="login-screen" class="w-full max-w-md">
@@ -34,9 +86,7 @@
                     <h2 class="text-center text-xl font-bold text-gray-700">COORDENAÇÃO DE GESTÃO DOCUMENTAL</h2>
                     <p class="mt-2 text-center text-2xl font-extrabold text-gray-900">Sistema de Ponto</p>
                 </div>
-                
                 <form id="login-form" class="space-y-6" onsubmit="return false;">
-                    
                     <div class="space-y-2 mb-6">
                         <p class="text-sm font-medium text-gray-700 text-center">Selecione o tipo de acesso:</p>
                         <div class="flex justify-center gap-4">
@@ -50,12 +100,19 @@
                             </label>
                         </div>
                     </div>
-
-                    <div><input id="email" type="email" autocomplete="email" required class="w-full px-3 py-2 border rounded-md focus:ring-green-500 focus:border-green-500" placeholder="Seu e-mail"></div>
-                    <div><input id="password" type="password" autocomplete="current-password" required class="w-full px-3 py-2 border rounded-md focus:ring-green-500 focus:border-green-500" placeholder="Sua senha"></div>
+                    <div>
+                        <input id="email" type="email" autocomplete="email" required class="w-full px-3 py-2 border rounded-md focus:ring-green-500 focus:border-green-500" placeholder="Seu e-mail">
+                    </div>
+                    <div>
+                        <input id="password" type="password" autocomplete="current-password" required class="w-full px-3 py-2 border rounded-md focus:ring-green-500 focus:border-green-500" placeholder="Sua senha">
+                    </div>
                     <p id="login-error" class="text-sm text-red-600 text-center"></p>
-                    <div><button type="submit" class="w-full py-2 px-4 rounded-md text-white bg-green-600 hover:bg-green-700 font-medium">Entrar</button></div>
-                    <div class="text-sm text-center"><a href="#" id="forgot-password-link" class="font-medium text-green-600 hover:text-green-500">Esqueceu sua senha?</a></div>
+                    <div>
+                        <button type="submit" class="w-full py-2 px-4 rounded-md text-white bg-green-600 hover:bg-green-700 font-medium">Entrar</button>
+                    </div>
+                    <div class="text-sm text-center">
+                        <a href="#" id="forgot-password-link" class="font-medium text-green-600 hover:text-green-500">Esqueceu sua senha?</a>
+                    </div>
                 </form>
             </div>
         </div>
@@ -77,13 +134,15 @@
                 <div id="daily-limit-message" class="hidden p-4 text-center bg-green-100 text-green-700 rounded-lg">O registo de ponto para hoje já foi concluído.</div>
                 
                 <div class="grid md:grid-cols-2 gap-6">
-                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-center p-4 bg-gray-50 rounded-lg flex flex-col justify-center items-center relative">
                         <p class="text-sm font-medium text-gray-500">SALDO DE HORAS DO MÊS</p>
                         <p id="accumulated-balance" class="text-3xl font-bold text-gray-800">--:--</p>
                     </div>
-                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div class="text-center p-4 bg-gray-50 rounded-lg flex flex-col justify-center items-center relative">
                         <p class="text-sm font-medium text-gray-500">SALDO TOTAL (GERAL)</p>
                         <p id="grand-total-balance" class="text-3xl font-bold text-gray-800">--:--</p>
+                        <!-- Novo Botão para Ver Detalhes do Saldo -->
+                        <button id="view-grand-total-details-btn" class="mt-2 text-xs font-medium text-blue-600 hover:text-blue-800 underline bg-transparent border-none cursor-pointer">Ver Detalhes</button>
                     </div>
                 </div>
 
@@ -152,7 +211,6 @@
                                 </svg>
                                 <span id="requests-notification-badge" class="hidden absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-600 rounded-full"></span>
                             </div>
-
                             <div id="requests-notification-popover" class="hidden absolute top-full right-0 mt-2 w-72 bg-white border border-gray-200 rounded-md shadow-lg z-50">
                                 <div class="p-3 border-b border-gray-200">
                                     <h4 class="font-semibold text-gray-800">Solicitações Pendentes</h4>
@@ -257,11 +315,8 @@
                                     <option value="inactive">Inativos</option>
                                     <option value="all">Todos os Status</option>
                                 </select>
-                                
                                 <select id="request-user-filter" class="p-2 border rounded-md flex-grow sm:flex-grow-0"></select>
-                                
                                 <input type="month" id="request-month-filter" class="p-2 border rounded-md flex-grow sm:flex-grow-0" title="Selecione um mês para filtrar rapidamente">
-                                
                                 <div class="flex items-center gap-2">
                                     <span class="text-sm text-gray-500 hidden sm:inline">Período:</span>
                                     <input type="date" id="request-start-date-filter" class="p-2 border rounded-md flex-grow sm:flex-grow-0">
@@ -312,6 +367,21 @@
                                 </table>
                             </div>
                         </div>
+                        
+                        <!-- NOVO: Gerenciamento de Motivos -->
+                        <div class="mt-8 border-t border-gray-200 pt-6">
+                            <h3 class="text-lg font-medium mb-4">Gerenciamento de Motivos de Justificativa Padrão</h3>
+                            <p class="text-sm text-gray-600 mb-4">Adicione motivos que aparecerão como opções para os funcionários ao criar uma solicitação (Ex: Feriado, Atestado Médico).</p>
+                            <div class="flex gap-2 max-w-xl">
+                                <input type="text" id="new-motive-input" class="p-2 border rounded-md flex-grow" placeholder="Novo motivo...">
+                                <button id="add-motive-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Adicionar</button>
+                            </div>
+                            <div class="mt-4 max-w-xl">
+                                <ul id="motives-management-list" class="divide-y divide-gray-200 border rounded-md bg-white">
+                                    <!-- Motivos aparecerão aqui -->
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -327,19 +397,159 @@
             <p class="mt-2 text-xs text-gray-500">Desenvolvido por Alex do Vale</p>
         </div>
     </footer>
-    
+
     <!-- MODAIS COMUNS -->
-    <div id="forgot-password-modal" class="modal"><div class="modal-content"><span id="close-forgot-modal-button" class="float-right text-2xl font-bold cursor-pointer">&times;</span><h3 class="text-lg font-medium mb-4">Redefinir Senha</h3><p class="text-sm text-gray-600 mb-4">Digite seu e-mail para receber um link de redefinição.</p><form id="forgot-password-form"><input id="forgot-email" type="email" required placeholder="Seu e-email" class="w-full px-3 py-2 border rounded-md"><button type="submit" class="mt-4 w-full py-2 px-4 rounded-md text-white bg-green-600 hover:bg-green-700">Enviar Link</button></form><p id="modal-message" class="text-sm mt-4 text-center"></p></div></div>
-    
+    <div id="forgot-password-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-forgot-modal-button" class="float-right text-2xl font-bold cursor-pointer">&times;</span>
+            <h3 class="text-lg font-medium mb-4">Redefinir Senha</h3>
+            <p class="text-sm text-gray-600 mb-4">Digite seu e-mail para receber um link de redefinição.</p>
+            <form id="forgot-password-form">
+                <input id="forgot-email" type="email" required placeholder="Seu e-email" class="w-full px-3 py-2 border rounded-md">
+                <button type="submit" class="mt-4 w-full py-2 px-4 rounded-md text-white bg-green-600 hover:bg-green-700">Enviar Link</button>
+            </form>
+            <p id="modal-message" class="text-sm mt-4 text-center"></p>
+        </div>
+    </div>
+
     <!-- MODAIS ADMIN -->
-    <div id="delete-confirm-modal" class="modal"><div class="modal-content"><h3 id="delete-modal-title" class="text-lg font-medium mb-4">Confirmar Exclusão</h3><p id="delete-modal-text" class="text-sm text-gray-600 mb-4"></p><div class="flex justify-end gap-4"><button id="cancel-delete-btn" class="py-2 px-4 rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300">Cancelar</button><button id="confirm-delete-btn" class="py-2 px-4 rounded-md text-white bg-red-600 hover:bg-red-700">Apagar</button></div></div></div>
-    <div id="add-entry-modal" class="modal"><div class="modal-content"><h3 class="text-lg font-medium mb-4">Adicionar/Editar Batidas do Dia</h3><p id="add-entry-date" class="text-sm font-bold mb-4 text-gray-700"></p><div class="grid grid-cols-2 gap-4"><div><label for="add-entry-in-1" class="block text-sm font-medium text-gray-700 mb-1">Entrada:</label><input type="time" id="add-entry-in-1" class="w-full px-3 py-2 border rounded-md"></div><div><label for="add-entry-out-1" class="block text-sm font-medium text-gray-700 mb-1">Saída:</label><input type="time" id="add-entry-out-1" class="w-full px-3 py-2 border rounded-md"></div></div><p id="add-entry-message" class="text-sm mt-4 text-center"></p><div class="flex justify-end gap-4 mt-6"><button id="cancel-add-btn" class="py-2 px-4 rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300">Cancelar</button><button id="save-add-btn" class="py-2 px-4 rounded-md text-white bg-green-600 hover:bg-green-700">Salvar</button></div></div></div>
-    <div id="justify-modal" class="modal"><div class="modal-content"><h3 class="text-lg font-medium mb-4">Justificar/Abonar Dia</h3><p id="justify-date" class="text-sm font-bold mb-4 text-gray-700"></p><div class="space-y-4"><div><label for="justify-reason" class="block text-sm font-medium text-gray-700 mb-1">Motivo / Descrição:</label><input type="text" id="justify-reason" class="w-full px-3 py-2 border rounded-md" placeholder="Ex: Feriado, Atestado Médico, Banco de Horas..."></div><div><label for="justify-hours" class="block text-sm font-medium text-gray-700 mb-1">Horas a Abonar (opcional):</label><input type="time" id="justify-hours" class="w-full px-3 py-2 border rounded-md"><p class="text-xs text-gray-500 mt-1">Deixe em branco para justificar o dia todo sem batidas. Para abono parcial, insira o tempo a creditar.</p></div></div><p id="justify-message" class="text-sm mt-4 text-center"></p><div class="flex justify-end gap-4 mt-6"><button id="cancel-justify-btn" class="py-2 px-4 rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300">Cancelar</button><button id="save-justify-btn" class="py-2 px-4 rounded-md text-white bg-green-600 hover:bg-green-700">Salvar Justificativa</button></div></div></div>
-    <div id="request-action-modal" class="modal"><div class="modal-content"><h3 class="text-lg font-medium mb-4">Analisar Solicitação</h3><div class="space-y-4 text-sm"><p><strong>Funcionário:</strong> <span id="req-modal-user-name"></span></p><p><strong>Data:</strong> <span id="req-modal-date"></span></p><div><p class="font-medium text-gray-700">Justificativa do Funcionário:</p><p id="req-modal-text" class="mt-1 p-2 bg-gray-100 rounded-md"></p></div><div><label for="req-modal-abono" class="block font-medium text-gray-700 mb-1">Abonar Horas/Minutos:</label><input type="time" id="req-modal-abono" class="w-full px-3 py-2 border rounded-md"><p class="text-xs text-gray-500 mt-1">Deixe em branco para não abonar. 06:00 para abonar o dia todo.</p></div></div><p id="req-modal-message" class="text-sm mt-4 text-center"></p><div class="flex flex-wrap justify-end gap-2 mt-6"><button id="cancel-req-action-btn" class="py-2 px-4 rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300">Cancelar</button><button id="delete-req-action-btn" class="py-2 px-4 rounded-md text-white bg-red-600 hover:bg-red-700">Apagar</button><button id="decline-req-action-btn" class="py-2 px-4 rounded-md text-white bg-orange-600 hover:bg-orange-700">Recusar</button><button id="approve-req-action-btn" class="py-2 px-4 rounded-md text-white bg-green-600 hover:bg-green-700">Aprovar</button></div></div></div>
-    <div id="final-report-modal" class="modal"><div class="modal-content max-w-3xl w-full"><span id="close-final-report-modal" class="float-right text-2xl font-bold cursor-pointer">&times;</span><h3 class="text-lg font-bold mb-4">Relatório Final de Horas</h3><div id="final-report-content" class="space-y-3 text-gray-700"></div><div class="flex justify-end gap-4 mt-6"><button id="download-final-pdf-btn" class="py-2 px-4 rounded-md text-white bg-blue-600 hover:bg-blue-700">Baixar PDF</button></div></div></div>
+    <div id="delete-confirm-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="delete-modal-title" class="text-lg font-medium mb-4">Confirmar Exclusão</h3>
+            <p id="delete-modal-text" class="text-sm text-gray-600 mb-4"></p>
+            <div class="flex justify-end gap-4">
+                <button id="cancel-delete-btn" class="py-2 px-4 rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300">Cancelar</button>
+                <button id="confirm-delete-btn" class="py-2 px-4 rounded-md text-white bg-red-600 hover:bg-red-700">Apagar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="add-entry-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-medium mb-4">Adicionar/Editar Batidas do Dia</h3>
+            <p id="add-entry-date" class="text-sm font-bold mb-4 text-gray-700"></p>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="add-entry-in-1" class="block text-sm font-medium text-gray-700 mb-1">Entrada:</label>
+                    <input type="time" id="add-entry-in-1" class="w-full px-3 py-2 border rounded-md">
+                </div>
+                <div>
+                    <label for="add-entry-out-1" class="block text-sm font-medium text-gray-700 mb-1">Saída:</label>
+                    <input type="time" id="add-entry-out-1" class="w-full px-3 py-2 border rounded-md">
+                </div>
+            </div>
+            <p id="add-entry-message" class="text-sm mt-4 text-center"></p>
+            <div class="flex justify-end gap-4 mt-6">
+                <button id="cancel-add-btn" class="py-2 px-4 rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300">Cancelar</button>
+                <button id="save-add-btn" class="py-2 px-4 rounded-md text-white bg-green-600 hover:bg-green-700">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="justify-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-medium mb-4">Justificar/Abonar Dia</h3>
+            <p id="justify-date" class="text-sm font-bold mb-4 text-gray-700"></p>
+            <div class="space-y-4">
+                <div>
+                    <label for="justify-reason" class="block text-sm font-medium text-gray-700 mb-1">Motivo / Descrição:</label>
+                    <input type="text" id="justify-reason" class="w-full px-3 py-2 border rounded-md" placeholder="Ex: Feriado, Atestado Médico, Banco de Horas...">
+                </div>
+                <div>
+                    <label for="justify-hours" class="block text-sm font-medium text-gray-700 mb-1">Horas a Abonar (opcional):</label>
+                    <input type="time" id="justify-hours" class="w-full px-3 py-2 border rounded-md">
+                    <p class="text-xs text-gray-500 mt-1">Deixe em branco para justificar o dia todo sem batidas. Para abono parcial, insira o tempo a creditar.</p>
+                </div>
+            </div>
+            <p id="justify-message" class="text-sm mt-4 text-center"></p>
+            <div class="flex justify-end gap-4 mt-6">
+                <button id="cancel-justify-btn" class="py-2 px-4 rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300">Cancelar</button>
+                <button id="save-justify-btn" class="py-2 px-4 rounded-md text-white bg-green-600 hover:bg-green-700">Salvar Justificativa</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="request-action-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-lg font-medium mb-4">Analisar Solicitação</h3>
+            <div class="space-y-4 text-sm">
+                <p><strong>Funcionário:</strong> <span id="req-modal-user-name"></span></p>
+                <p><strong>Data:</strong> <span id="req-modal-date"></span></p>
+                <div>
+                    <p class="font-medium text-gray-700">Justificativa do Funcionário:</p>
+                    <p id="req-modal-text" class="mt-1 p-2 bg-gray-100 rounded-md"></p>
+                </div>
+                <div>
+                    <label for="req-modal-abono" class="block font-medium text-gray-700 mb-1">Abonar Horas/Minutos:</label>
+                    <input type="time" id="req-modal-abono" class="w-full px-3 py-2 border rounded-md">
+                    <p class="text-xs text-gray-500 mt-1">Deixe em branco para não abonar. 06:00 para abonar o dia todo.</p>
+                </div>
+            </div>
+            <p id="req-modal-message" class="text-sm mt-4 text-center"></p>
+            <div class="flex flex-wrap justify-end gap-2 mt-6">
+                <button id="cancel-req-action-btn" class="py-2 px-4 rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300">Cancelar</button>
+                <button id="delete-req-action-btn" class="py-2 px-4 rounded-md text-white bg-red-600 hover:bg-red-700">Apagar</button>
+                <button id="decline-req-action-btn" class="py-2 px-4 rounded-md text-white bg-orange-600 hover:bg-orange-700">Recusar</button>
+                <button id="approve-req-action-btn" class="py-2 px-4 rounded-md text-white bg-green-600 hover:bg-green-700">Aprovar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="final-report-modal" class="modal">
+        <div class="modal-content max-w-3xl w-full">
+            <span id="close-final-report-modal" class="float-right text-2xl font-bold cursor-pointer">&times;</span>
+            <h3 class="text-lg font-bold mb-4">Relatório Final de Horas</h3>
+            <div id="final-report-content" class="space-y-3 text-gray-700"></div>
+            <div class="flex justify-end gap-4 mt-6">
+                <button id="download-final-pdf-btn" class="py-2 px-4 rounded-md text-white bg-blue-600 hover:bg-blue-700">Baixar PDF</button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAIS USUÁRIO -->
-    <div id="request-modal" class="modal"><div class="modal-content"><span id="close-request-modal-button" class="absolute top-4 right-4 text-2xl font-bold cursor-pointer hover:text-gray-700">&times;</span><h3 id="request-modal-title" class="text-lg font-medium mb-4">Solicitações</h3><div id="request-modal-body"><div id="request-history-view"></div><div id="new-request-form-view" class="hidden"><p class="text-sm text-gray-600 mb-4">Escreva abaixo a sua justificativa ou pedido de correção.</p><form id="request-form"><textarea id="request-text" required rows="4" class="w-full px-3 py-2 border rounded-md" placeholder="Ex: Esqueci de registar a minha saída."></textarea><button type="submit" class="mt-4 w-full py-2 px-4 rounded-md text-white bg-green-600 hover:bg-green-700">Enviar Solicitação</button></form></div></div><p id="request-modal-message" class="text-sm mt-4 text-center"></p></div></div>
+    <div id="request-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-request-modal-button" class="absolute top-4 right-4 text-2xl font-bold cursor-pointer hover:text-gray-700">&times;</span>
+            <h3 id="request-modal-title" class="text-lg font-medium mb-4">Solicitações</h3>
+            <div id="request-modal-body">
+                <div id="request-history-view"></div>
+                <div id="new-request-form-view" class="hidden">
+                    <p class="text-sm text-gray-600 mb-4">Selecione um motivo ou escreva abaixo a sua justificativa/pedido de correção.</p>
+                    <form id="request-form">
+                        <!-- NOVO: Select de motivos -->
+                        <select id="request-motive-select" class="w-full px-3 py-2 border rounded-md mb-3 bg-gray-50 focus:ring-green-500 focus:border-green-500">
+                            <option value="">Selecione um motivo (opcional)...</option>
+                        </select>
+                        <textarea id="request-text" rows="3" class="w-full px-3 py-2 border rounded-md" placeholder="Detalhes adicionais (Ex: Esqueci de registar a minha saída)"></textarea>
+                        <button type="submit" class="mt-4 w-full py-2 px-4 rounded-md text-white bg-green-600 hover:bg-green-700">Enviar Solicitação</button>
+                    </form>
+                </div>
+            </div>
+            <p id="request-modal-message" class="text-sm mt-4 text-center"></p>
+        </div>
+    </div>
+
+    <!-- NOVO: MODAL DETALHES DO SALDO GERAL -->
+    <div id="grand-total-details-modal" class="modal">
+        <div class="modal-content large">
+            <span id="close-grand-total-details-modal" class="float-right text-2xl font-bold cursor-pointer">&times;</span>
+            <h3 class="text-lg font-medium mb-4">Detalhes do Saldo Total (Geral)</h3>
+            <div class="max-h-96 overflow-y-auto mt-4">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50 sticky top-0">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500 uppercase">Data</th>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500 uppercase">Motivo/Situação</th>
+                            <th class="px-4 py-2 text-right font-medium text-gray-500 uppercase">Valor (Horas)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="grand-total-details-body" class="bg-white divide-y divide-gray-200">
+                        <!-- Linhas geradas dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -363,12 +573,12 @@
         const TOLERANCE_THRESHOLD_MS = 16 * 60 * 1000;
         
         let app, auth, db;
-        try { 
-            app = initializeApp(firebaseConfig); 
-            auth = getAuth(app); 
-            db = getFirestore(app); 
-        } catch (e) { 
-            document.body.innerHTML = `<div class="text-red-500 p-8">Erro de configuração do Firebase.</div>`; 
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (e) {
+            document.body.innerHTML = `<div class="text-red-500 p-8">Erro de configuração do Firebase.</div>`;
         }
 
         const ui = {
@@ -387,8 +597,8 @@
             reportTableHead: document.getElementById('report-table-head'),
             reportTableBody: document.getElementById('report-table-body'),
             noReportMessage: document.getElementById('no-report-message'),
-            reportStartDate: document.getElementById('report-start-date'), 
-            reportEndDate: document.getElementById('report-end-date'), 
+            reportStartDate: document.getElementById('report-start-date'),
+            reportEndDate: document.getElementById('report-end-date'),
             generateReportBtn: document.getElementById('generate-report-btn'),
             downloadPdfBtn: document.getElementById('download-pdf-btn'),
             monthlyBalance: document.getElementById('monthly-balance'),
@@ -422,6 +632,11 @@
             notificationPopover: document.getElementById('requests-notification-popover'),
             notificationList: document.getElementById('requests-notification-list'),
             
+            // ADMIN MOTIVOS
+            newMotiveInput: document.getElementById('new-motive-input'),
+            addMotiveBtn: document.getElementById('add-motive-btn'),
+            motivesManagementList: document.getElementById('motives-management-list'),
+            
             // USER UI
             userAppScreen: document.getElementById('user-app-screen'),
             userUserName: document.getElementById('user-user-name'),
@@ -441,8 +656,21 @@
             monthSelect: document.getElementById('month-select'),
             yearSelect: document.getElementById('year-select'),
             
+            // USER GRAND TOTAL DETAILS
+            viewGrandTotalBtn: document.getElementById('view-grand-total-details-btn'),
+            grandTotalModal: document.getElementById('grand-total-details-modal'),
+            closeGrandTotalModal: document.getElementById('close-grand-total-details-modal'),
+            grandTotalBody: document.getElementById('grand-total-details-body'),
+            
             // SHARED MODALS
-            forgot: { modal: document.getElementById('forgot-password-modal'), link: document.getElementById('forgot-password-link'), close: document.getElementById('close-forgot-modal-button'), form: document.getElementById('forgot-password-form'), email: document.getElementById('forgot-email'), msg: document.getElementById('modal-message') },
+            forgot: { 
+                modal: document.getElementById('forgot-password-modal'), 
+                link: document.getElementById('forgot-password-link'), 
+                close: document.getElementById('close-forgot-modal-button'), 
+                form: document.getElementById('forgot-password-form'), 
+                email: document.getElementById('forgot-email'), 
+                msg: document.getElementById('modal-message') 
+            },
             
             // ADMIN MODALS
             deleteConfirmModal: document.getElementById('delete-confirm-modal'),
@@ -478,7 +706,17 @@
             downloadFinalPdfBtn: document.getElementById('download-final-pdf-btn'),
             
             // USER MODALS
-            userRequest: { modal: document.getElementById('request-modal'), title: document.getElementById('request-modal-title'), close: document.getElementById('close-request-modal-button'), form: document.getElementById('request-form'), text: document.getElementById('request-text'), msg: document.getElementById('request-modal-message'), historyView: document.getElementById('request-history-view'), formView: document.getElementById('new-request-form-view') }
+            userRequest: { 
+                modal: document.getElementById('request-modal'), 
+                title: document.getElementById('request-modal-title'), 
+                close: document.getElementById('close-request-modal-button'), 
+                form: document.getElementById('request-form'), 
+                text: document.getElementById('request-text'), 
+                select: document.getElementById('request-motive-select'), 
+                msg: document.getElementById('request-modal-message'), 
+                historyView: document.getElementById('request-history-view'), 
+                formView: document.getElementById('new-request-form-view') 
+            }
         };
 
         // ADMIN STATE
@@ -486,66 +724,98 @@
         let allUsers = [];
         let allAdminRequests = [];
         let filteredEmployees = [];
-        let recordToDelete = null, requestToDelete = null, entryToAddOrEdit = null;
+        let recordToDelete = null, requestToDelete = null, entryToAddOrEdit = null, motiveToDelete = null;
         let dayToJustify = null, userToFinalize = null, requestToAction = null;
+        let allMotives = []; // NOVO: Armazena motivos carregados
 
         // USER STATE
-        let unsubscribeUser = { entries: null, requests: null };
-        let isIpAllowed = false;
+        let unsubscribeUser = { entries: null, requests: null, motives: null };
+        let isIpAllowed = true; // ALTERADO: Forçando sempre como true a pedido do usuário
         let currentRequestDate = null;
         let allUserEntries = [], allUserRequestsData = [];
         let selectorsInitialized = false;
+        let grandTotalDetailsList = []; // NOVO: Armazena quebras detalhadas do saldo
 
-        // --- VALIDAÇÃO DE IP VIA FIRESTORE ---
+        // --- VALIDAÇÃO DE IP (DESATIVADA A PEDIDO DO USUÁRIO) ---
         async function verifyUserIp() {
-            try {
-                // Busca o documento específico que você criou
-                const configDoc = await getDoc(doc(db, "config", "koKuUivIgLrfg9FL8Zlv"));
-                let allowedIps = [];
-                
-                if (configDoc.exists()) {
-                    allowedIps = configDoc.data().allowed_ips || [];
-                }
+            // A pedido, acionando tudo IGNORANDO O IP.
+            isIpAllowed = true; 
+            ui.ipErrorMessage.classList.add('hidden');
+            ui.clockInButton.disabled = false;
+            ui.clockOutButton.disabled = false;
+            return true;
+        }
 
-                // --- NOVAS LINHAS PARA DEBUG ---
-                console.log("--- DEBUG DE IP ---");
-                console.log("IPs permitidos do Firebase (bruto):", allowedIps);
-                // Mapeia para mostrar o IP entre aspas e seu comprimento
-                const formattedAllowedIps = allowedIps.map(ip => `"${ip}" (Length: ${ip.length})`);
-                console.log("IPs permitidos do Firebase (formatado):", formattedAllowedIps);
-                // --- FIM NOVAS LINHAS PARA DEBUG ---
+        // --- FUNÇÕES STUB PARA EVITAR ERROS (CORREÇÃO DE BUGS DO CÓDIGO ORIGINAL) ---
+        async function loadOccurrence(userId, month, year) {
+            // Esta função estava sendo chamada no código original mas nunca foi declarada.
+            // Impede que o sistema lance ReferenceError ao trocar de usuário no relatório.
+            ui.occurrenceDetails.value = '';
+            ui.occurrenceStatus.textContent = '';
+        }
 
-                const response = await fetch('https://api.ipify.org?format=json');
-                const data = await response.json();
-                const userIp = data.ip;
-
-                // --- NOVAS LINHAS PARA DEBUG ---
-                console.log("IP do usuário (bruto):", userIp);
-                console.log("IP do usuário (formatado):", `"${userIp}" (Length: ${userIp.length})`);
-                // --- FIM NOVAS LINHAS PARA DEBUG ---
-
-                isIpAllowed = allowedIps.includes(userIp);
-                
-                // --- NOVAS LINHAS PARA DEBUG ---
-                console.log("Resultado da comparação 'includes()':", isIpAllowed);
-                // --- FIM NOVAS LINHAS PARA DEBUG ---
-
-                ui.ipErrorMessage.classList.toggle('hidden', isIpAllowed);
-                if (!isIpAllowed) {
-                    ui.ipErrorMessage.textContent = `Acesso negado. IP ${userIp} não autorizado.`;
-                    ui.clockInButton.disabled = true;
-                    ui.clockOutButton.disabled = true;
-                }
-                return isIpAllowed;
-            } catch (e) {
-                console.error("Erro ao validar rede de acesso:", e); // ADICIONADO LOG DE ERRO MAIS DETALHADO
-                isIpAllowed = false;
-                ui.ipErrorMessage.textContent = "Erro ao validar rede de acesso.";
-                ui.ipErrorMessage.classList.remove('hidden');
-                return false;
-            }
+        async function finalizeUserActivity(userId) {
+            // Previne travamentos na aba de Gerenciamento, pois não havia sido implementada
+            console.log("Finalizando usuário:", userId);
         }
         
+        // --- LISTENERS DE MOTIVOS (COMUM PARA ADMIN E USER) ---
+        function listenToMotives() {
+            const motivesRef = collection(db, `artifacts/${appId}/motives`);
+            onSnapshot(motivesRef, (snap) => {
+                allMotives = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => a.text.localeCompare(b.text));
+                renderMotivesAdmin();
+                renderMotivesUser();
+            });
+        }
+
+        function renderMotivesAdmin() {
+            if (!ui.motivesManagementList) return;
+            ui.motivesManagementList.innerHTML = '';
+            if(allMotives.length === 0) {
+                ui.motivesManagementList.innerHTML = '<li class="p-3 text-sm text-gray-500">Nenhum motivo cadastrado.</li>';
+                return;
+            }
+            allMotives.forEach(m => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center p-3 hover:bg-gray-50';
+                li.innerHTML = `
+                    <span class="text-sm font-medium text-gray-700">${m.text}</span>
+                    <button class="text-red-600 hover:text-red-800 text-xs font-bold" data-id="${m.id}">Excluir</button>
+                `;
+                li.querySelector('button').addEventListener('click', async (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    if(confirm("Deseja realmente excluir este motivo?")) {
+                        try { 
+                            await deleteDoc(doc(db, `artifacts/${appId}/motives`, id)); 
+                        } catch(err) { 
+                            console.error("Erro ao deletar motivo", err); 
+                        }
+                    }
+                });
+                ui.motivesManagementList.appendChild(li);
+            });
+        }
+
+        function renderMotivesUser() {
+            if (!ui.userRequest.select) return;
+            ui.userRequest.select.innerHTML = '<option value="">Selecione um motivo (opcional)...</option>';
+            allMotives.forEach(m => {
+                ui.userRequest.select.innerHTML += `<option value="${m.text}">${m.text}</option>`;
+            });
+        }
+
+        ui.addMotiveBtn.addEventListener('click', async () => {
+            const text = ui.newMotiveInput.value.trim();
+            if (!text) return;
+            try {
+                await addDoc(collection(db, `artifacts/${appId}/motives`), { text: text, createdAt: Timestamp.now() });
+                ui.newMotiveInput.value = '';
+            } catch (err) { 
+                alert("Erro ao adicionar motivo."); 
+            }
+        });
+
         // --- AUTH E ROTEAMENTO INICIAL ---
         ui.loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -571,6 +841,9 @@
                 const userData = userDoc.exists() ? userDoc.data() : {};
                 const userRole = userData.role || 'employee';
                 const userTeam = userData.team || '';
+
+                // Inicia o listener de motivos para ambos os perfis
+                listenToMotives();
 
                 if (accessType === 'admin') {
                     if (['general_manager', 'nupap_manager', 'nudof_manager'].includes(userRole)) {
@@ -620,25 +893,38 @@
         }
 
         // ESQUECEU A SENHA
-        ui.forgot.link.addEventListener('click', (e) => { e.preventDefault(); ui.forgot.modal.style.display = 'flex'; });
-        ui.forgot.close.addEventListener('click', () => { ui.forgot.modal.style.display = 'none'; ui.forgot.msg.textContent = ''; });
+        ui.forgot.link.addEventListener('click', (e) => { 
+            e.preventDefault(); 
+            ui.forgot.modal.style.display = 'flex'; 
+        });
+        ui.forgot.close.addEventListener('click', () => { 
+            ui.forgot.modal.style.display = 'none'; 
+            ui.forgot.msg.textContent = ''; 
+        });
         ui.forgot.form.addEventListener('submit', async (e) => {
-            e.preventDefault(); ui.forgot.msg.textContent = 'Enviando...';
+            e.preventDefault(); 
+            ui.forgot.msg.textContent = 'Enviando...';
             try {
                 await sendPasswordResetEmail(auth, ui.forgot.email.value);
-                ui.forgot.msg.textContent = 'Link de redefinição enviado!'; ui.forgot.msg.className = 'text-sm mt-4 text-center text-green-600';
-            } catch (error) { ui.forgot.msg.textContent = 'Erro ao enviar. Verifique o e-mail.'; ui.forgot.msg.className = 'text-sm mt-4 text-center text-red-600'; }
+                ui.forgot.msg.textContent = 'Link de redefinição enviado!'; 
+                ui.forgot.msg.className = 'text-sm mt-4 text-center text-green-600';
+            } catch (error) { 
+                ui.forgot.msg.textContent = 'Erro ao enviar. Verifique o e-mail.'; 
+                ui.forgot.msg.className = 'text-sm mt-4 text-center text-red-600'; 
+            }
         });
 
         window.onclick = (event) => {
             if (event.target == ui.forgot.modal) ui.forgot.modal.style.display = "none";
             if (event.target == ui.userRequest.modal) ui.userRequest.modal.style.display = "none";
+            if (event.target == ui.grandTotalModal) ui.grandTotalModal.style.display = "none";
         };
 
         // --- ÁREA DE FUNÇÕES: ADMIN ---
         function formatMsAdmin(ms, showSign = false) {
             if (isNaN(ms)) return "00:00";
-            const isNegative = ms < 0; if (isNegative) ms = -ms;
+            const isNegative = ms < 0; 
+            if (isNegative) ms = -ms;
             const hours = Math.floor(ms / 3600000);
             const minutes = Math.floor((ms % 3600000) / 60000);
             const sign = isNegative ? '-' : (showSign ? '+' : '');
@@ -650,7 +936,10 @@
             const usersRef = collection(db, 'users');
             unsubscribeAdmin.users = onSnapshot(usersRef, (usersSnapshot) => {
                 allUsers = usersSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-                filteredEmployees = allUsers.filter(u => u.role === 'employee' && (role === 'general_manager' || (role === 'nupap_manager' && u.team === 'nupap') || (role === 'nudof_manager' && u.team === 'nudof')));
+                filteredEmployees = allUsers.filter(u => 
+                    u.role === 'employee' && 
+                    (role === 'general_manager' || (role === 'nupap_manager' && u.team === 'nupap') || (role === 'nudof_manager' && u.team === 'nudof'))
+                );
 
                 renderUserDropdown(filteredEmployees.filter(u => (u.status || 'active') === 'active'));
                 filterAndRenderUsersManagementTable();
@@ -677,11 +966,16 @@
         function renderNotificationPopover(pendingRequests) {
             ui.notificationList.innerHTML = ''; 
             pendingRequests.sort((a, b) => {
-                const [dayA, monthA, yearA] = a.date.split('/'); const dateA = new Date(yearA, monthA - 1, dayA); 
-                const [dayB, monthB, yearB] = b.date.split('/'); const dateB = new Date(yearB, monthB - 1, dayB); 
+                const [dayA, monthA, yearA] = a.date.split('/'); 
+                const dateA = new Date(yearA, monthA - 1, dayA); 
+                const [dayB, monthB, yearB] = b.date.split('/'); 
+                const dateB = new Date(yearB, monthB - 1, dayB); 
                 return dateA - dateB;
             });
-            if (pendingRequests.length === 0) { ui.notificationList.innerHTML = '<li class="p-3 text-sm text-gray-500">Nenhuma solicitação pendente.</li>'; return; }
+            if (pendingRequests.length === 0) { 
+                ui.notificationList.innerHTML = '<li class="p-3 text-sm text-gray-500">Nenhuma solicitação pendente.</li>'; 
+                return; 
+            }
             pendingRequests.forEach(req => {
                 const li = document.createElement('li');
                 li.className = 'p-3 text-sm hover:bg-gray-50 cursor-pointer';
@@ -702,230 +996,427 @@
 
         function renderUserDropdown(users) {
             ui.userDropdown.innerHTML = '<option value="">Selecione um funcionário</option>';
-            users.forEach(user => { ui.userDropdown.innerHTML += `<option value="${user.id}">${user.name}</option>`; });
+            users.forEach(user => { 
+                ui.userDropdown.innerHTML += `<option value="${user.id}">${user.name}</option>`; 
+            });
         }
         
         function clearAdminReportArea() {
             ui.reportTitle.textContent = 'Histórico de Registros';
-            ui.reportTableBody.innerHTML = ''; ui.reportTableHead.innerHTML = '';
-            ui.monthlyBalance.classList.add('hidden'); ui.downloadPdfBtn.classList.add('hidden');
-            ui.occurrenceSection.classList.add('hidden'); ui.occurrenceDetails.value = ''; ui.occurrenceStatus.textContent = '';
-            ui.noReportMessage.classList.remove('hidden'); ui.noReportMessage.textContent = "Clique em 'Gerar Relatório' para visualizar.";
+            ui.reportTableBody.innerHTML = ''; 
+            ui.reportTableHead.innerHTML = '';
+            ui.monthlyBalance.classList.add('hidden'); 
+            ui.downloadPdfBtn.classList.add('hidden');
+            ui.occurrenceSection.classList.add('hidden'); 
+            ui.occurrenceDetails.value = ''; 
+            ui.occurrenceStatus.textContent = '';
+            ui.noReportMessage.classList.remove('hidden'); 
+            ui.noReportMessage.textContent = "Clique em 'Gerar Relatório' para visualizar.";
         }
 
         ui.userDropdown.addEventListener('change', async (e) => {
             const selectedUserId = e.target.value;
-            if (ui.requestUserFilter.value !== selectedUserId) { ui.requestUserFilter.value = selectedUserId; filterAndRenderRequests(); }
+            if (ui.requestUserFilter.value !== selectedUserId) { 
+                ui.requestUserFilter.value = selectedUserId; 
+                filterAndRenderRequests(); 
+            }
             clearAdminReportArea();
-            if (selectedUserId && ui.reportStartDate.value) {
-                 const [y, m, d] = ui.reportStartDate.value.split('-');
-                 await loadOccurrence(selectedUserId, parseInt(m, 10), parseInt(y, 10));
-                 ui.occurrenceSection.classList.remove('hidden');
-            } else if (!selectedUserId) { ui.noReportMessage.textContent = "Selecione um funcionário."; }
+            if (selectedUserId && ui.reportStartDate.value) { 
+                const [y, m, d] = ui.reportStartDate.value.split('-'); 
+                await loadOccurrence(selectedUserId, parseInt(m, 10), parseInt(y, 10)); 
+                ui.occurrenceSection.classList.remove('hidden');
+            } else if (!selectedUserId) { 
+                ui.noReportMessage.textContent = "Selecione um funcionário."; 
+            }
         });
 
-        [ui.reportStartDate, ui.reportEndDate].forEach(el => { el.addEventListener('change', clearAdminReportArea); });
+        [ui.reportStartDate, ui.reportEndDate].forEach(el => { 
+            el.addEventListener('change', clearAdminReportArea); 
+        });
 
         ui.generateReportBtn.addEventListener('click', async () => {
             const selectedUserId = ui.userDropdown.value;
             const startDateVal = ui.reportStartDate.value;
             const endDateVal = ui.reportEndDate.value;
             if (selectedUserId && startDateVal && endDateVal) {
-                if(startDateVal > endDateVal) { alert('A data final deve ser posterior à data inicial.'); return; }
+                if (startDateVal > endDateVal) { 
+                    alert('A data final deve ser posterior à data inicial.'); 
+                    return; 
+                }
                 await loadAndRenderEditableHistory(selectedUserId, new Date(startDateVal + 'T00:00:00'), new Date(endDateVal + 'T23:59:59'));
             } else {
-                clearAdminReportArea(); ui.noReportMessage.textContent = "Selecione um funcionário e intervalo.";
+                clearAdminReportArea(); 
+                ui.noReportMessage.textContent = "Selecione um funcionário e intervalo.";
             }
         });
 
         async function loadAndRenderEditableHistory(userId, startDate, endDate) {
-            ui.reportTitle.textContent = `Carregando dados...`; ui.reportTableBody.innerHTML = '';
-            ui.monthlyBalance.classList.add('hidden'); ui.downloadPdfBtn.classList.add('hidden'); ui.noReportMessage.classList.add('hidden');
+            ui.reportTitle.textContent = `Carregando dados...`; 
+            ui.reportTableBody.innerHTML = '';
+            ui.monthlyBalance.classList.add('hidden'); 
+            ui.downloadPdfBtn.classList.add('hidden'); 
+            ui.noReportMessage.classList.add('hidden');
+            
             const userName = allUsers.find(u => u.id === userId)?.name;
             ui.reportTableHead.innerHTML = `<tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dia</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entradas</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Saídas</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status / Saldo</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th></tr>`;
 
             let allEntries = [];
             try {
-                const q = query(collection(db, 'artifacts', appId, 'users', userId, 'time_entries'), where("timestamp", ">=", Timestamp.fromDate(startDate)), where("timestamp", "<=", Timestamp.fromDate(endDate)), orderBy("timestamp", "asc"));
+                const q = query(
+                    collection(db, 'artifacts', appId, 'users', userId, 'time_entries'), 
+                    where("timestamp", ">=", Timestamp.fromDate(startDate)), 
+                    where("timestamp", "<=", Timestamp.fromDate(endDate)), 
+                    orderBy("timestamp", "asc")
+                );
                 const snap = await getDocs(q);
                 allEntries = snap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-            } catch(e) {
-                const qAll = query(collection(db, 'artifacts', appId, 'users', userId, 'time_entries'), orderBy("timestamp", "asc"));
+            } catch (e) {
+                const qAll = query(
+                    collection(db, 'artifacts', appId, 'users', userId, 'time_entries'), 
+                    orderBy("timestamp", "asc")
+                );
                 const snapAll = await getDocs(qAll);
                 allEntries = snapAll.docs.map(doc => ({ ...doc.data(), id: doc.id })).filter(e => {
-                    if (!e.timestamp) return false; const d = e.timestamp.toDate(); return d >= startDate && d <= endDate;
+                    if (!e.timestamp) return false; 
+                    const d = e.timestamp.toDate(); 
+                    return d >= startDate && d <= endDate;
                 });
             }
 
             ui.reportTitle.textContent = `Relatório para ${userName} (${startDate.toLocaleDateString('pt-BR')} a ${endDate.toLocaleDateString('pt-BR')})`;
-            const entriesByDay = allEntries.reduce((acc, entry) => { if (entry.timestamp) { const date = entry.timestamp.toDate().toLocaleDateString('pt-BR'); if (!acc[date]) acc[date] = []; acc[date].push(entry); } return acc; }, {});
+            
+            const entriesByDay = allEntries.reduce((acc, entry) => { 
+                if (entry.timestamp) { 
+                    const date = entry.timestamp.toDate().toLocaleDateString('pt-BR'); 
+                    if (!acc[date]) acc[date] = []; 
+                    acc[date].push(entry); 
+                } 
+                return acc; 
+            }, {});
 
             let allUserRequests = [];
             try {
                 const allReqSnap = await getDocs(query(collection(db, `/artifacts/${appId}/requests`), where("userId", "==", userId)));
                 allUserRequests = allReqSnap.docs.map(d => ({ ...d.data(), id: d.id }));
-            } catch(e) {}
+            } catch (e) {}
 
-            let totalBalanceMs = 0; const requiredWorkMs = 6 * 3600 * 1000; const toleranceMs = (15 * 60 * 1000) + (59 * 1000);
-            let currentDate = new Date(startDate); currentDate.setHours(0, 0, 0, 0);
-            const loopEnd = new Date(endDate); loopEnd.setHours(23, 59, 59, 999);
-            const today = new Date(); today.setHours(0,0,0,0);
+            let totalBalanceMs = 0; 
+            const requiredWorkMs = 6 * 3600 * 1000; 
+            const toleranceMs = (15 * 60 * 1000) + (59 * 1000);
+            
+            let currentDate = new Date(startDate); 
+            currentDate.setHours(0, 0, 0, 0);
+            const loopEnd = new Date(endDate); 
+            loopEnd.setHours(23, 59, 59, 999);
+            const today = new Date(); 
+            today.setHours(0,0,0,0);
 
             while(currentDate <= loopEnd) {
                 const dateString = currentDate.toLocaleDateString('pt-BR');
                 const dayOfWeek = currentDate.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
                 const dayIndex = currentDate.getDay();
-                const isWeekend = dayIndex === 0 || dayIndex === 6; const isFutureDay = currentDate > today;
-                const dayEntries = entriesByDay[dateString] || []; const hasEntries = dayEntries.length > 0;
+                const isWeekend = dayIndex === 0 || dayIndex === 6; 
+                const isFutureDay = currentDate > today;
+                const dayEntries = entriesByDay[dateString] || []; 
+                const hasEntries = dayEntries.length > 0;
                 const anyRequestForDay = allUserRequests.find(r => r.date === dateString);
                 const isApproved = anyRequestForDay?.status === 'approved';
 
-                let ins = '---', outs = '---', statusText = '---', statusClass = 'text-gray-700'; let dailyBalanceMs = 0;
+                let ins = '---', outs = '---', statusText = '---', statusClass = 'text-gray-700'; 
+                let dailyBalanceMs = 0;
 
-                if (isWeekend) { statusText = 'Fim de Semana'; statusClass = 'text-gray-500 italic'; } 
-                else if (isFutureDay) { statusText = '---'; statusClass = 'text-gray-700'; } 
-                else {
+                if (isWeekend) { 
+                    statusText = 'Fim de Semana'; 
+                    statusClass = 'text-gray-500 italic'; 
+                } else if (isFutureDay) { 
+                    statusText = '---'; 
+                    statusClass = 'text-gray-700'; 
+                } else {
                     let workedMs = 0;
                     if (hasEntries) {
                         const sorted = [...dayEntries].sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis());
                         ins = sorted.filter(e => e.type === 'in').map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })).join(', ') || '---';
                         outs = sorted.filter(e => e.type === 'out').map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })).join(', ') || '---';
-                        for (let i = 0; i < sorted.length; i += 2) { if (sorted[i]?.type === 'in' && sorted[i+1]?.type === 'out') workedMs += sorted[i+1].timestamp.toMillis() - sorted[i].timestamp.toMillis(); }
+                        for (let i = 0; i < sorted.length; i += 2) { 
+                            if (sorted[i]?.type === 'in' && sorted[i+1]?.type === 'out') {
+                                workedMs += sorted[i+1].timestamp.toMillis() - sorted[i].timestamp.toMillis(); 
+                            }
+                        }
                     }
 
                     if (isApproved) {
-                        statusText = `Abonado (${anyRequestForDay.text})`; statusClass = 'text-blue-600 font-bold';
+                        statusText = `Abonado (${anyRequestForDay.text})`; 
+                        statusClass = 'text-blue-600 font-bold';
                         dailyBalanceMs = (anyRequestForDay.abonoMinutes && anyRequestForDay.abonoMinutes > 0) ? (workedMs + (anyRequestForDay.abonoMinutes * 60 * 1000)) - requiredWorkMs : 0;
                     } else if (!hasEntries) {
-                        statusText = 'Falta'; statusClass = 'text-red-600 font-bold'; dailyBalanceMs = -requiredWorkMs;
+                        statusText = 'Falta'; 
+                        statusClass = 'text-red-600 font-bold'; 
+                        dailyBalanceMs = -requiredWorkMs;
                     } else if (hasEntries && dayEntries.length % 2 !== 0) {
-                        statusText = 'Batida Ímpar'; statusClass = 'text-orange-500 font-bold'; dailyBalanceMs = 0;
+                        statusText = 'Batida Ímpar'; 
+                        statusClass = 'text-orange-500 font-bold'; 
+                        dailyBalanceMs = 0;
                     } else {
                         dailyBalanceMs = workedMs - requiredWorkMs;
-                        if (Math.abs(dailyBalanceMs) <= toleranceMs) { statusText = '00:00'; statusClass = 'text-green-600'; dailyBalanceMs = 0; } 
-                        else { statusText = formatMsAdmin(dailyBalanceMs, true); statusClass = dailyBalanceMs >= 0 ? 'text-green-600' : 'text-red-600'; }
+                        if (Math.abs(dailyBalanceMs) <= toleranceMs) { 
+                            statusText = '00:00'; 
+                            statusClass = 'text-green-600'; 
+                            dailyBalanceMs = 0; 
+                        } else { 
+                            statusText = formatMsAdmin(dailyBalanceMs, true); 
+                            statusClass = dailyBalanceMs >= 0 ? 'text-green-600' : 'text-red-600'; 
+                        }
                     }
-                    if (!isApproved || dailyBalanceMs !== 0) totalBalanceMs += dailyBalanceMs;
+                    if (!isApproved || dailyBalanceMs !== 0) {
+                        totalBalanceMs += dailyBalanceMs;
+                    }
                 }
 
-                let actionsHtml = (isWeekend || isFutureDay) ? '---' : (anyRequestForDay ? `<div class="flex gap-2 items-center"><button class="edit-day-btn text-blue-600" data-date="${currentDate.toISOString()}" data-user-id="${userId}">Editar</button><button class="view-request-btn text-xl" data-request-id="${anyRequestForDay.id}">&#9993;</button></div>` : `<div class="flex gap-2"><button class="edit-day-btn text-blue-600" data-date="${currentDate.toISOString()}" data-user-id="${userId}">Editar</button><button class="justify-day-btn text-green-600" data-date="${currentDate.toISOString()}" data-user-id="${userId}">Justificar</button></div>`);
+                let actionsHtml = (isWeekend || isFutureDay) ? '---' : (anyRequestForDay ? 
+                    `<div class="flex gap-2 items-center"><button class="edit-day-btn text-blue-600" data-date="${currentDate.toISOString()}" data-user-id="${userId}">Editar</button><button class="view-request-btn text-xl" data-request-id="${anyRequestForDay.id}">&#9993;</button></div>` : 
+                    `<div class="flex gap-2"><button class="edit-day-btn text-blue-600" data-date="${currentDate.toISOString()}" data-user-id="${userId}">Editar</button><button class="justify-day-btn text-green-600" data-date="${currentDate.toISOString()}" data-user-id="${userId}">Justificar</button></div>`
+                );
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `<td class="px-6 py-4">${dateString}</td><td class="px-6 py-4 capitalize">${dayOfWeek}</td><td class="px-6 py-4">${ins}</td><td class="px-6 py-4">${outs}</td><td class="px-6 py-4 font-medium ${statusClass}">${statusText}</td><td class="px-6 py-4">${actionsHtml}</td>`;
                 ui.reportTableBody.appendChild(row);
+                
                 currentDate.setDate(currentDate.getDate() + 1);
             }
 
             ui.monthlyBalance.textContent = `Saldo total do período: ${formatMsAdmin(totalBalanceMs, true)}`;
             ui.monthlyBalance.className = `mt-4 p-4 rounded-md font-bold text-center ${totalBalanceMs >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
-            ui.monthlyBalance.classList.remove('hidden'); ui.downloadPdfBtn.classList.remove('hidden'); ui.occurrenceSection.classList.remove('hidden');
+            ui.monthlyBalance.classList.remove('hidden'); 
+            ui.downloadPdfBtn.classList.remove('hidden'); 
+            ui.occurrenceSection.classList.remove('hidden');
 
             document.querySelectorAll('.edit-day-btn').forEach(b => b.addEventListener('click', (e) => showAddEntryModal(e.target.dataset.date, e.target.dataset.userId)));
             document.querySelectorAll('.justify-day-btn').forEach(b => b.addEventListener('click', (e) => showJustifyModal(e.target.dataset.date, e.target.dataset.userId)));
-            document.querySelectorAll('.view-request-btn').forEach(b => b.addEventListener('click', (e) => { const req = allUserRequests.find(r => r.id === e.currentTarget.dataset.requestId); if (req) showRequestActionModal(req); }));
+            document.querySelectorAll('.view-request-btn').forEach(b => b.addEventListener('click', (e) => { 
+                const req = allUserRequests.find(r => r.id === e.currentTarget.dataset.requestId); 
+                if (req) showRequestActionModal(req); 
+            }));
         }
 
         // Funções de Modais Admin
         async function showAddEntryModal(dateStr, userId) {
-            const date = new Date(dateStr); ui.addEntryDate.textContent = `Editando batidas para: ${date.toLocaleDateString('pt-BR')}`;
-            entryToAddOrEdit = { userId, date }; ui.addEntryIn1.value = ''; ui.addEntryOut1.value = ''; ui.addEntryMessage.textContent = ''; 
-            const startOfDay = new Date(date); startOfDay.setHours(0, 0, 0, 0); const endOfDay = new Date(date); endOfDay.setHours(23, 59, 59, 999);
+            const date = new Date(dateStr); 
+            ui.addEntryDate.textContent = `Editando batidas para: ${date.toLocaleDateString('pt-BR')}`;
+            entryToAddOrEdit = { userId, date }; 
+            ui.addEntryIn1.value = ''; 
+            ui.addEntryOut1.value = ''; 
+            ui.addEntryMessage.textContent = ''; 
+            
+            const startOfDay = new Date(date); 
+            startOfDay.setHours(0, 0, 0, 0); 
+            const endOfDay = new Date(date); 
+            endOfDay.setHours(23, 59, 59, 999);
+            
             try {
-                const snap = await getDocs(query(collection(db, 'artifacts', appId, 'users', userId, 'time_entries'), where("timestamp", ">=", Timestamp.fromDate(startOfDay)), where("timestamp", "<=", Timestamp.fromDate(endOfDay))));
+                const snap = await getDocs(query(
+                    collection(db, 'artifacts', appId, 'users', userId, 'time_entries'), 
+                    where("timestamp", ">=", Timestamp.fromDate(startOfDay)), 
+                    where("timestamp", "<=", Timestamp.fromDate(endOfDay))
+                ));
                 const dayEntries = snap.docs.map(doc => doc.data()).sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
-                const ins = dayEntries.filter(e => e.type === 'in'), outs = dayEntries.filter(e => e.type === 'out');
+                const ins = dayEntries.filter(e => e.type === 'in');
+                const outs = dayEntries.filter(e => e.type === 'out');
+                
                 if (ins[0]) ui.addEntryIn1.value = ins[0].timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                 if (outs[0]) ui.addEntryOut1.value = outs[0].timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
             } catch (error) {}
             ui.addEntryModal.style.display = 'flex';
         }
-        function showJustifyModal(dateStr, userId) { const date = new Date(dateStr); ui.justifyDate.textContent = `Justificativa para: ${date.toLocaleDateString('pt-BR')}`; dayToJustify = { userId, date }; ui.justifyReason.value = ''; ui.justifyHours.value = ''; ui.justifyMessage.textContent = ''; ui.justifyModal.style.display = 'flex'; }
-        function showRequestActionModal(request) { requestToAction = request; ui.reqModalUserName.textContent = request.userName; ui.reqModalDate.textContent = request.date; ui.reqModalText.textContent = request.text; ui.reqModalAbono.value = request.abonoMinutes ? `${String(Math.floor(request.abonoMinutes / 60)).padStart(2, '0')}:${String(request.abonoMinutes % 60).padStart(2, '0')}` : ''; ui.requestActionModal.style.display = 'flex'; }
+        
+        function showJustifyModal(dateStr, userId) { 
+            const date = new Date(dateStr); 
+            ui.justifyDate.textContent = `Justificativa para: ${date.toLocaleDateString('pt-BR')}`; 
+            dayToJustify = { userId, date }; 
+            ui.justifyReason.value = ''; 
+            ui.justifyHours.value = ''; 
+            ui.justifyMessage.textContent = ''; 
+            ui.justifyModal.style.display = 'flex'; 
+        }
+        
+        function showRequestActionModal(request) { 
+            requestToAction = request; 
+            ui.reqModalUserName.textContent = request.userName; 
+            ui.reqModalDate.textContent = request.date; 
+            ui.reqModalText.textContent = request.text; 
+            ui.reqModalAbono.value = request.abonoMinutes ? `${String(Math.floor(request.abonoMinutes / 60)).padStart(2, '0')}:${String(request.abonoMinutes % 60).padStart(2, '0')}` : ''; 
+            ui.requestActionModal.style.display = 'flex'; 
+        }
         
         ui.saveJustifyBtn.addEventListener('click', async () => {
             if (!dayToJustify) return;
-            const { userId, date } = dayToJustify; const reason = ui.justifyReason.value.trim(); const abonoTime = ui.justifyHours.value;
-            if (!reason) { ui.justifyMessage.textContent = 'Motivo obrigatório.'; ui.justifyMessage.className = 'text-red-600'; return; }
-            let abonoMinutes = abonoTime ? (parseInt(abonoTime.split(':')[0])*60 + parseInt(abonoTime.split(':')[1])) : 0;
+            const { userId, date } = dayToJustify; 
+            const reason = ui.justifyReason.value.trim(); 
+            const abonoTime = ui.justifyHours.value;
+            if (!reason) { 
+                ui.justifyMessage.textContent = 'Motivo obrigatório.'; 
+                ui.justifyMessage.className = 'text-red-600'; 
+                return; 
+            }
+            let abonoMinutes = abonoTime ? (parseInt(abonoTime.split(':')[0]) * 60 + parseInt(abonoTime.split(':')[1])) : 0;
             const user = allUsers.find(u => u.id === userId);
             try {
-                await addDoc(collection(db, `artifacts/${appId}/requests`), { userId, userName: user.name, date: date.toLocaleDateString('pt-BR'), text: reason, status: 'approved', createdAt: Timestamp.now(), abonoMinutes: abonoMinutes > 0 ? abonoMinutes : null });
-                ui.justifyMessage.textContent = "Salvo!"; ui.justifyMessage.className = 'text-green-600'; setTimeout(() => { ui.justifyModal.style.display = 'none'; dayToJustify = null; }, 1000);
+                await addDoc(collection(db, `artifacts/${appId}/requests`), { 
+                    userId, 
+                    userName: user.name, 
+                    date: date.toLocaleDateString('pt-BR'), 
+                    text: reason, 
+                    status: 'approved', 
+                    createdAt: Timestamp.now(), 
+                    abonoMinutes: abonoMinutes > 0 ? abonoMinutes : null 
+                });
+                ui.justifyMessage.textContent = "Salvo!"; 
+                ui.justifyMessage.className = 'text-green-600'; 
+                setTimeout(() => { 
+                    ui.justifyModal.style.display = 'none'; 
+                    dayToJustify = null; 
+                }, 1000);
             } catch (error) {}
         });
 
         ui.saveAddBtn.addEventListener('click', async () => {
-            if (!entryToAddOrEdit) return; const { userId, date } = entryToAddOrEdit;
-            const times = [{ time: ui.addEntryIn1.value, type: 'in' }, { time: ui.addEntryOut1.value, type: 'out' }];
+            if (!entryToAddOrEdit) return; 
+            const { userId, date } = entryToAddOrEdit;
+            const times = [
+                { time: ui.addEntryIn1.value, type: 'in' }, 
+                { time: ui.addEntryOut1.value, type: 'out' }
+            ];
             const newEntries = [];
+            
             for (const entry of times) {
                 if (entry.time) {
                     const [h, m] = entry.time.split(':').map(Number);
-                    if (!isNaN(h)) { const d = new Date(date); d.setHours(h, m, 0, 0); newEntries.push({ timestamp: Timestamp.fromDate(d), type: entry.type, source: 'admin_edit' }); }
+                    if (!isNaN(h)) { 
+                        const d = new Date(date); 
+                        d.setHours(h, m, 0, 0); 
+                        newEntries.push({ timestamp: Timestamp.fromDate(d), type: entry.type, source: 'admin_edit' }); 
+                    }
                 }
             }
+            
             try {
                 const entriesRef = collection(db, `artifacts/${appId}/users/${userId}/time_entries`);
-                const startOfDay = new Date(date); startOfDay.setHours(0, 0, 0, 0); const endOfDay = new Date(date); endOfDay.setHours(23, 59, 59, 999);
+                const startOfDay = new Date(date); 
+                startOfDay.setHours(0, 0, 0, 0); 
+                const endOfDay = new Date(date); 
+                endOfDay.setHours(23, 59, 59, 999);
+                
                 const q = query(entriesRef, where("timestamp", ">=", Timestamp.fromDate(startOfDay)), where("timestamp", "<=", Timestamp.fromDate(endOfDay)));
-                const snaps = await getDocs(q); await Promise.all(snaps.docs.map(docSnap => deleteDoc(docSnap.ref)));
+                const snaps = await getDocs(q); 
+                await Promise.all(snaps.docs.map(docSnap => deleteDoc(docSnap.ref)));
                 await Promise.all(newEntries.map(e => addDoc(entriesRef, e)));
-                ui.addEntryMessage.textContent = "Salvo!"; ui.addEntryMessage.className = 'text-green-600'; setTimeout(() => { ui.addEntryModal.style.display = 'none'; entryToAddOrEdit = null; }, 1000);
+                
+                ui.addEntryMessage.textContent = "Salvo!"; 
+                ui.addEntryMessage.className = 'text-green-600'; 
+                setTimeout(() => { 
+                    ui.addEntryModal.style.display = 'none'; 
+                    entryToAddOrEdit = null; 
+                }, 1000);
             } catch (e) {}
         });
 
-        ui.cancelAddBtn.addEventListener('click', () => { ui.addEntryModal.style.display = 'none'; entryToAddOrEdit = null; });
-        ui.cancelJustifyBtn.addEventListener('click', () => { ui.justifyModal.style.display = 'none'; dayToJustify = null; });
+        ui.cancelAddBtn.addEventListener('click', () => { 
+            ui.addEntryModal.style.display = 'none'; 
+            entryToAddOrEdit = null; 
+        });
+        ui.cancelJustifyBtn.addEventListener('click', () => { 
+            ui.justifyModal.style.display = 'none'; 
+            dayToJustify = null; 
+        });
 
         // Modais genéricos (Delete, Request actions)
         ui.confirmDeleteBtn.addEventListener('click', async () => {
-            if (requestToDelete) { try { await deleteDoc(doc(db, `/artifacts/${appId}/requests`, requestToDelete)); } catch (error) {} } 
-            else if (userToFinalize) { await finalizeUserActivity(userToFinalize); }
-            requestToDelete = null; userToFinalize = null; ui.deleteConfirmModal.style.display = 'none';
+            if (requestToDelete) { 
+                try { 
+                    await deleteDoc(doc(db, `/artifacts/${appId}/requests`, requestToDelete)); 
+                } catch (error) {} 
+            } else if (userToFinalize) { 
+                await finalizeUserActivity(userToFinalize); 
+            }
+            requestToDelete = null; 
+            userToFinalize = null; 
+            ui.deleteConfirmModal.style.display = 'none';
         });
-        ui.cancelDeleteBtn.addEventListener('click', () => { requestToDelete = null; userToFinalize = null; ui.deleteConfirmModal.style.display = 'none'; });
+        
+        ui.cancelDeleteBtn.addEventListener('click', () => { 
+            requestToDelete = null; 
+            userToFinalize = null; 
+            ui.deleteConfirmModal.style.display = 'none'; 
+        });
 
         ui.approveReqActionBtn.addEventListener('click', async () => {
             if (!requestToAction) return;
-            const abonoTime = ui.reqModalAbono.value; let abonoMinutes = abonoTime ? (parseInt(abonoTime.split(':')[0])*60 + parseInt(abonoTime.split(':')[1])) : null;
-            await updateDoc(doc(db, `/artifacts/${appId}/requests`, requestToAction.id), { status: 'approved', abonoMinutes }); ui.requestActionModal.style.display = 'none';
+            const abonoTime = ui.reqModalAbono.value; 
+            let abonoMinutes = abonoTime ? (parseInt(abonoTime.split(':')[0]) * 60 + parseInt(abonoTime.split(':')[1])) : null;
+            await updateDoc(doc(db, `/artifacts/${appId}/requests`, requestToAction.id), { status: 'approved', abonoMinutes }); 
+            ui.requestActionModal.style.display = 'none';
         });
-        ui.declineReqActionBtn.addEventListener('click', async () => { if (requestToAction) await updateDoc(doc(db, `/artifacts/${appId}/requests`, requestToAction.id), { status: 'declined', abonoMinutes: null }); ui.requestActionModal.style.display = 'none'; });
-        ui.deleteReqActionBtn.addEventListener('click', () => { if (requestToAction) { requestToDelete = requestToAction.id; ui.deleteConfirmModal.style.display = 'flex'; ui.requestActionModal.style.display = 'none'; } });
-        ui.cancelReqActionBtn.addEventListener('click', () => { ui.requestActionModal.style.display = 'none'; requestToAction = null; });
-        ui.closeFinalReportModal.addEventListener('click', () => { ui.finalReportModal.style.display = 'none'; });
-        ui.applyQuickEntryBtn.addEventListener('click', async () => { /* Implementação de fast entry simplificada se necessário */ });
+        
+        ui.declineReqActionBtn.addEventListener('click', async () => { 
+            if (requestToAction) await updateDoc(doc(db, `/artifacts/${appId}/requests`, requestToAction.id), { status: 'declined', abonoMinutes: null }); 
+            ui.requestActionModal.style.display = 'none'; 
+        });
+        
+        ui.deleteReqActionBtn.addEventListener('click', () => { 
+            if (requestToAction) { 
+                requestToDelete = requestToAction.id; 
+                ui.deleteConfirmModal.style.display = 'flex'; 
+                ui.requestActionModal.style.display = 'none'; 
+            } 
+        });
+        
+        ui.cancelReqActionBtn.addEventListener('click', () => { 
+            ui.requestActionModal.style.display = 'none'; 
+            requestToAction = null; 
+        });
+        
+        ui.closeFinalReportModal.addEventListener('click', () => { 
+            ui.finalReportModal.style.display = 'none'; 
+        });
+        
+        ui.applyQuickEntryBtn.addEventListener('click', async () => { 
+            /* Implementação de fast entry simplificada se necessário */ 
+        });
 
         // Tabs Admin
         function switchTab(clickedTab, targetPanel) {
             [ui.tabReports, ui.tabRequests, ui.tabUsers].forEach(t => t.classList.remove('border-green-500', 'text-green-600'));
             [ui.panelReports, ui.panelRequests, ui.panelUsers].forEach(p => p.classList.add('hidden'));
-            clickedTab.classList.add('border-green-500', 'text-green-600'); targetPanel.classList.remove('hidden');
+            clickedTab.classList.add('border-green-500', 'text-green-600'); 
+            targetPanel.classList.remove('hidden');
         }
+        
         ui.tabReports.addEventListener('click', () => switchTab(ui.tabReports, ui.panelReports));
         ui.tabRequests.addEventListener('click', () => switchTab(ui.tabRequests, ui.panelRequests));
         ui.tabUsers.addEventListener('click', () => switchTab(ui.tabUsers, ui.panelUsers));
 
-        function setupRequestFilters() { ui.requestUserFilter.innerHTML = '<option value="">Todos</option>'; filteredEmployees.forEach(u => ui.requestUserFilter.innerHTML += `<option value="${u.id}">${u.name}</option>`); }
+        function setupRequestFilters() { 
+            ui.requestUserFilter.innerHTML = '<option value="">Todos</option>'; 
+            filteredEmployees.forEach(u => ui.requestUserFilter.innerHTML += `<option value="${u.id}">${u.name}</option>`); 
+        }
+        
         function filterAndRenderRequests() { /* Implementação do filtro... */ }
         function filterAndRenderUsersManagementTable() { /* Implementação do gerenciamento... */ }
 
-
         // --- ÁREA DE FUNÇÕES: FUNCIONÁRIO (USER) ---
-        function parseDateFromPTBR(dateString) { const [d, m, y] = dateString.split('/').map(Number); return new Date(y, m - 1, d, 12); }
-        function formatMsUser(ms, neg = false) { const s = ms < 0 ? '-' : ''; if(neg) ms=Math.abs(ms); else if(ms<0) ms=0; const t = Math.floor(ms/1000); const h = Math.floor(t/3600); const m = Math.floor((t%3600)/60); return `${s}${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; }
-
-        // A função verifyUserIp foi movida para o início do script e não precisa ser duplicada aqui.
-        // Remove a função duplicada abaixo:
-        /*
-        async function verifyUserIp() {
-            try {
-                const response = await fetch('https://api.ipify.org?format=json'); const data = await response.json();
-                isIpAllowed = allowedIps.includes(data.ip);
-                ui.ipErrorMessage.classList.toggle('hidden', isIpAllowed);
-                if (!isIpAllowed) { ui.ipErrorMessage.textContent = `Acesso negado. Registo de ponto restrito a redes autorizadas. (IP: ${data.ip})`; [ui.clockInButton, ui.clockOutButton].forEach(b => b.disabled = true); }
-            } catch (e) { isIpAllowed = false; ui.ipErrorMessage.textContent = "Erro de rede. Registo de ponto desativado."; ui.ipErrorMessage.classList.remove('hidden'); [ui.clockInButton, ui.clockOutButton].forEach(b => b.disabled = true); }
+        function parseDateFromPTBR(dateString) { 
+            const [d, m, y] = dateString.split('/').map(Number); 
+            return new Date(y, m - 1, d, 12); 
         }
-        */
+        
+        function formatMsUser(ms, neg = false) { 
+            const s = ms < 0 ? '-' : ''; 
+            if(neg) ms = Math.abs(ms); 
+            else if(ms < 0) ms = 0; 
+            const t = Math.floor(ms / 1000); 
+            const h = Math.floor(t / 3600); 
+            const m = Math.floor((t % 3600) / 60); 
+            return `${s}${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; 
+        }
 
         function listenToFirebaseUser(user) {
             if (!user) return;
@@ -939,6 +1430,7 @@
                 allUserEntries = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => a.timestamp.toMillis() - b.timestamp.toMillis());
                 renderUserApp();
             });
+            
             unsubscribeUser.requests = onSnapshot(requestsQuery, (reqSnapshot) => {
                 allUserRequestsData = reqSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderUserApp();
@@ -947,22 +1439,36 @@
         
         function renderUserApp() {
             if (!auth.currentUser) return; 
+            
             const todayEntries = allUserEntries.filter(e => new Date(e.timestamp.toDate()).toDateString() === new Date().toDateString());
+            
             if (isIpAllowed) {
-                const hasIn = todayEntries.some(e => e.type === 'in'), hasOut = todayEntries.some(e => e.type === 'out');
-                ui.clockInButton.disabled = hasIn; ui.clockOutButton.disabled = !hasIn || hasOut;
+                const hasIn = todayEntries.some(e => e.type === 'in');
+                const hasOut = todayEntries.some(e => e.type === 'out');
+                ui.clockInButton.disabled = hasIn; 
+                ui.clockOutButton.disabled = !hasIn || hasOut;
                 ui.dailyLimitMessage.classList.toggle('hidden', !(hasIn && hasOut));
             }
             
             // Calc daily balance
-            let workedMs = 0; const todayIns = todayEntries.filter(e => e.type === 'in').map(e => e.timestamp.toMillis()), todayOuts = todayEntries.filter(e => e.type === 'out').map(e => e.timestamp.toMillis());
-            for (let i = 0; i < Math.min(todayIns.length, todayOuts.length); i++) workedMs += todayOuts[i] - todayIns[i];
+            let workedMs = 0; 
+            const todayIns = todayEntries.filter(e => e.type === 'in').map(e => e.timestamp.toMillis());
+            const todayOuts = todayEntries.filter(e => e.type === 'out').map(e => e.timestamp.toMillis());
+            
+            for (let i = 0; i < Math.min(todayIns.length, todayOuts.length); i++) {
+                workedMs += todayOuts[i] - todayIns[i];
+            }
             ui.totalWorkedSpan.textContent = formatMsUser(workedMs);
+            
             if (todayIns.length > 0 && todayIns.length === todayOuts.length) {
-                const rawBalance = workedMs - WORKDAY_MS; const balanceMs = Math.abs(rawBalance) < TOLERANCE_THRESHOLD_MS ? 0 : rawBalance;
-                ui.dailyBalanceSpan.textContent = balanceMs === 0 ? '00:00' : formatMsAdmin(balanceMs, true); // usando o Admin para forçar o sinal +/-
+                const rawBalance = workedMs - WORKDAY_MS; 
+                const balanceMs = Math.abs(rawBalance) < TOLERANCE_THRESHOLD_MS ? 0 : rawBalance;
+                ui.dailyBalanceSpan.textContent = balanceMs === 0 ? '00:00' : formatMsAdmin(balanceMs, true); 
                 ui.dailyBalanceSpan.className = `text-lg sm:text-xl font-bold ${balanceMs === 0 ? 'text-gray-800' : balanceMs > 0 ? 'text-green-600' : 'text-red-600'}`;
-            } else { ui.dailyBalanceSpan.textContent = '---'; ui.dailyBalanceSpan.className = 'text-lg sm:text-xl font-bold text-gray-800'; }
+            } else { 
+                ui.dailyBalanceSpan.textContent = '---'; 
+                ui.dailyBalanceSpan.className = 'text-lg sm:text-xl font-bold text-gray-800'; 
+            }
             
             calculateAndDisplayGrandTotalUser(allUserEntries, allUserRequestsData);
 
@@ -970,103 +1476,350 @@
                 const years = [...new Set(allUserEntries.map(e => e.timestamp.toDate().getFullYear()))].sort((a,b)=>b-a);
                 ui.yearSelect.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
                 ui.yearSelect.value = years.includes(new Date().getFullYear()) ? new Date().getFullYear() : years[0];
-                ui.yearSelect.addEventListener('change', renderUserApp); ui.monthSelect.addEventListener('change', renderUserApp);
+                ui.yearSelect.addEventListener('change', renderUserApp); 
+                ui.monthSelect.addEventListener('change', renderUserApp);
                 selectorsInitialized = true;
             }
+            
             if (selectorsInitialized) {
-                const sy = parseInt(ui.yearSelect.value); const mos = [...new Set(allUserEntries.filter(e => e.timestamp.toDate().getFullYear() === sy).map(e => e.timestamp.toDate().getMonth()))].sort((a,b)=>a-b);
+                const sy = parseInt(ui.yearSelect.value); 
+                const mos = [...new Set(allUserEntries.filter(e => e.timestamp.toDate().getFullYear() === sy).map(e => e.timestamp.toDate().getMonth()))].sort((a,b)=>a-b);
                 const n = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
                 const prev = ui.monthSelect.value;
                 ui.monthSelect.innerHTML = mos.map(m => `<option value="${m}">${n[m]}</option>`).join('');
-                if (mos.includes(parseInt(prev))) ui.monthSelect.value = prev; else if(mos.length) ui.monthSelect.value = mos[mos.length-1];
+                if (mos.includes(parseInt(prev))) {
+                    ui.monthSelect.value = prev; 
+                } else if (mos.length) {
+                    ui.monthSelect.value = mos[mos.length-1];
+                }
             }
 
             renderHistoryUser(allUserEntries, allUserRequestsData);
         }
 
         function calculateAndDisplayGrandTotalUser(entries, requests) {
-            let grandTotalMs = 0; const today = new Date(); today.setHours(0,0,0,0);
-            const approvedReqs = requests.reduce((acc, r) => { if(r.status==='approved') acc[r.date]=true; return acc; }, {});
-            const entriesByMonth = entries.reduce((acc, e) => { const d = e.timestamp.toDate(); const k = `${d.getFullYear()}-${d.getMonth()}`; if(!acc[k]) acc[k] = {y:d.getFullYear(),m:d.getMonth(),e:[]}; acc[k].e.push(e); return acc; }, {});
+            let grandTotalMs = 0; 
+            grandTotalDetailsList = []; // Reinicia a lista de detalhes
+
+            const today = new Date(); 
+            today.setHours(0,0,0,0);
+            
+            const approvedReqs = requests.reduce((acc, r) => { 
+                if (r.status === 'approved') acc[r.date] = r; 
+                return acc; 
+            }, {});
+            
+            const entriesByMonth = entries.reduce((acc, e) => { 
+                const d = e.timestamp.toDate(); 
+                const k = `${d.getFullYear()}-${d.getMonth()}`; 
+                if (!acc[k]) acc[k] = { y: d.getFullYear(), m: d.getMonth(), e: [] }; 
+                acc[k].e.push(e); 
+                return acc; 
+            }, {});
 
             for (const key in entriesByMonth) {
                 const { y, m, e: monthEntries } = entriesByMonth[key];
-                const entriesByDay = monthEntries.reduce((acc, e) => { const d = e.timestamp.toDate().toLocaleDateString('pt-BR'); if(!acc[d]) acc[d]={i:[],o:[]}; if(e.type==='in') acc[d].i.push(e); else acc[d].o.push(e); return acc; }, {});
+                const entriesByDay = monthEntries.reduce((acc, e) => { 
+                    const d = e.timestamp.toDate().toLocaleDateString('pt-BR'); 
+                    if (!acc[d]) acc[d] = { i: [], o: [] }; 
+                    if (e.type === 'in') acc[d].i.push(e); 
+                    else acc[d].o.push(e); 
+                    return acc; 
+                }, {});
+                
                 const datesInMonth = new Set(Object.keys(entriesByDay));
-                let loopEnd = new Date(y, m + 1, 0); if (y===today.getFullYear() && m===today.getMonth()) loopEnd = today;
-                for (let d = new Date(y, m, 1); d <= loopEnd; d.setDate(d.getDate()+1)) datesInMonth.add(new Date(d).toLocaleDateString('pt-BR'));
+                let loopEnd = new Date(y, m + 1, 0); 
+                if (y === today.getFullYear() && m === today.getMonth()) loopEnd = today;
+                
+                for (let d = new Date(y, m, 1); d <= loopEnd; d.setDate(d.getDate() + 1)) {
+                    datesInMonth.add(new Date(d).toLocaleDateString('pt-BR'));
+                }
                 
                 datesInMonth.forEach(date => {
-                    const dateObj = parseDateFromPTBR(date); if (dateObj.getFullYear()!==y || dateObj.getMonth()!==m || dateObj>today) return;
-                    const dayEntries = entriesByDay[date] || {i:[],o:[]};
-                    const dow = dateObj.getDay(); const isWorkday = dow!==0 && dow!==6;
-                    if (!approvedReqs[date]) {
-                        if (dayEntries.i.length>0 && dayEntries.i.length===dayEntries.o.length) {
-                            let worked = 0; dayEntries.i.sort((a,b)=>a.timestamp.toMillis()-b.timestamp.toMillis()); dayEntries.o.sort((a,b)=>a.timestamp.toMillis()-b.timestamp.toMillis());
-                            for(let j=0; j<dayEntries.i.length; j++) worked += dayEntries.o[j].timestamp.toMillis() - dayEntries.i[j].timestamp.toMillis();
-                            const diff = worked - WORKDAY_MS; grandTotalMs += Math.abs(diff) < TOLERANCE_THRESHOLD_MS ? 0 : diff;
-                        } else if (isWorkday && dayEntries.i.length===0 && dayEntries.o.length===0) { grandTotalMs -= WORKDAY_MS; }
+                    const dateObj = parseDateFromPTBR(date); 
+                    if (dateObj.getFullYear() !== y || dateObj.getMonth() !== m || dateObj > today) return;
+                    
+                    const dayEntries = entriesByDay[date] || { i: [], o: [] };
+                    const dow = dateObj.getDay(); 
+                    const isWorkday = dow !== 0 && dow !== 6;
+
+                    const reqApprovedForDay = approvedReqs[date];
+
+                    if (reqApprovedForDay) {
+                        // Se aprovado com horas de abono específico
+                        if (reqApprovedForDay.abonoMinutes && reqApprovedForDay.abonoMinutes > 0) {
+                            let worked = 0; 
+                            dayEntries.i.sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis()); 
+                            dayEntries.o.sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis());
+                            for (let j = 0; j < Math.min(dayEntries.i.length, dayEntries.o.length); j++) {
+                                worked += dayEntries.o[j].timestamp.toMillis() - dayEntries.i[j].timestamp.toMillis();
+                            }
+                            const diff = (worked + (reqApprovedForDay.abonoMinutes * 60 * 1000)) - WORKDAY_MS;
+                            if (diff !== 0) {
+                                grandTotalMs += diff;
+                                grandTotalDetailsList.push({ date: date, diffMs: diff, reason: `Abono Parcial (${reqApprovedForDay.text})` });
+                            }
+                        }
+                    } else {
+                        if (dayEntries.i.length > 0 && dayEntries.i.length === dayEntries.o.length) {
+                            let worked = 0; 
+                            dayEntries.i.sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis()); 
+                            dayEntries.o.sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis());
+                            for (let j = 0; j < dayEntries.i.length; j++) {
+                                worked += dayEntries.o[j].timestamp.toMillis() - dayEntries.i[j].timestamp.toMillis();
+                            }
+                            const diff = worked - WORKDAY_MS; 
+                            const adj = Math.abs(diff) < TOLERANCE_THRESHOLD_MS ? 0 : diff;
+                            grandTotalMs += adj;
+                            if (adj !== 0) {
+                                grandTotalDetailsList.push({ date: date, diffMs: adj, reason: adj > 0 ? 'Horas Extras' : 'Débito de Horas' });
+                            }
+                        } else if (isWorkday && dayEntries.i.length === 0 && dayEntries.o.length === 0) { 
+                            grandTotalMs -= WORKDAY_MS; 
+                            grandTotalDetailsList.push({ date: date, diffMs: -WORKDAY_MS, reason: 'Falta / Ausência não justificada' });
+                        }
                     }
                 });
             }
-            if (ui.grandTotalBalanceSpan) { ui.grandTotalBalanceSpan.textContent = formatMsAdmin(grandTotalMs, true); ui.grandTotalBalanceSpan.className = `text-3xl font-bold ${grandTotalMs===0?'text-gray-800':(grandTotalMs>0?'text-green-600':'text-red-600')}`; }
+            if (ui.grandTotalBalanceSpan) { 
+                ui.grandTotalBalanceSpan.textContent = formatMsAdmin(grandTotalMs, true); 
+                ui.grandTotalBalanceSpan.className = `text-3xl font-bold ${grandTotalMs === 0 ? 'text-gray-800' : (grandTotalMs > 0 ? 'text-green-600' : 'text-red-600')}`; 
+            }
         }
+
+        // Evento Botão Ver Detalhes do Saldo
+        ui.viewGrandTotalBtn.addEventListener('click', () => {
+            ui.grandTotalBody.innerHTML = '';
+            if (grandTotalDetailsList.length === 0) {
+                ui.grandTotalBody.innerHTML = '<tr><td colspan="3" class="px-4 py-4 text-center text-gray-500">Nenhum detalhe ou diferença de saldo encontrado.</td></tr>';
+            } else {
+                // Ordenar por data decrescente
+                const sortedList = [...grandTotalDetailsList].sort((a, b) => parseDateFromPTBR(b.date) - parseDateFromPTBR(a.date));
+                sortedList.forEach(item => {
+                    const colorClass = item.diffMs > 0 ? 'text-green-600' : 'text-red-600';
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 whitespace-nowrap">${item.date}</td>
+                        <td class="px-4 py-3">${item.reason}</td>
+                        <td class="px-4 py-3 text-right font-medium ${colorClass}">${formatMsAdmin(item.diffMs, true)}</td>
+                    `;
+                    ui.grandTotalBody.appendChild(tr);
+                });
+            }
+            ui.grandTotalModal.style.display = 'flex';
+        });
+
+        ui.closeGrandTotalModal.addEventListener('click', () => { 
+            ui.grandTotalModal.style.display = 'none'; 
+        });
 
         function renderHistoryUser(entries, requests) {
             ui.historyTableBody.innerHTML = '';
             if (!selectorsInitialized || !ui.yearSelect.value || !ui.monthSelect.value) return;
-            const sy = parseInt(ui.yearSelect.value), sm = parseInt(ui.monthSelect.value);
-            const entriesByDay = entries.reduce((acc, e) => { const d = e.timestamp.toDate(); if(d.getFullYear()===sy && d.getMonth()===sm) { const ds = d.toLocaleDateString('pt-BR'); if(!acc[ds]) acc[ds]={i:[],o:[]}; if(e.type==='in') acc[ds].i.push(e); else acc[ds].o.push(e); } return acc; }, {});
             
-            let moBalance = 0; const today = new Date(); const dates = new Set(Object.keys(entriesByDay));
-            let loopEnd = new Date(sy, sm+1, 0); if (sy===today.getFullYear() && sm===today.getMonth()) loopEnd = today;
-            for(let d=new Date(sy, sm, 1); d<=loopEnd; d.setDate(d.getDate()+1)) dates.add(new Date(d).toLocaleDateString('pt-BR'));
-            const allDays = Array.from(dates).sort((a,b) => parseDateFromPTBR(b)-parseDateFromPTBR(a));
+            const sy = parseInt(ui.yearSelect.value);
+            const sm = parseInt(ui.monthSelect.value);
+            
+            const entriesByDay = entries.reduce((acc, e) => { 
+                const d = e.timestamp.toDate(); 
+                if (d.getFullYear() === sy && d.getMonth() === sm) { 
+                    const ds = d.toLocaleDateString('pt-BR'); 
+                    if (!acc[ds]) acc[ds] = { i: [], o: [] }; 
+                    if (e.type === 'in') acc[ds].i.push(e); 
+                    else acc[ds].o.push(e); 
+                } 
+                return acc; 
+            }, {});
+            
+            let moBalance = 0; 
+            const today = new Date(); 
+            const dates = new Set(Object.keys(entriesByDay));
+            let loopEnd = new Date(sy, sm + 1, 0); 
+            if (sy === today.getFullYear() && sm === today.getMonth()) loopEnd = today;
+            
+            for (let d = new Date(sy, sm, 1); d <= loopEnd; d.setDate(d.getDate() + 1)) {
+                dates.add(new Date(d).toLocaleDateString('pt-BR'));
+            }
+            const allDays = Array.from(dates).sort((a,b) => parseDateFromPTBR(b) - parseDateFromPTBR(a));
 
             allDays.forEach(date => {
-                const dateObj = parseDateFromPTBR(date); const isWorkday = dateObj.getDay()!==0 && dateObj.getDay()!==6;
-                let de = entriesByDay[date]||{i:[],o:[]}; let ins = de.i.map(e=>e.timestamp.toDate().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})); let outs = de.o.map(e=>e.timestamp.toDate().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
-                let bText='---', bClass='text-gray-500', sText='', sColor='';
-                const reqs = requests.filter(r=>r.date===date); const apr = reqs.find(r=>r.status==='approved');
-                if (apr) { sText='Abonada'; sColor='text-green-500'; bText='00:00'; bClass='text-green-600'; }
-                else if (de.i.length>0 && de.i.length===de.o.length) {
-                    let w=0; de.i.sort((a,b)=>a.timestamp.toMillis()-b.timestamp.toMillis()); de.o.sort((a,b)=>a.timestamp.toMillis()-b.timestamp.toMillis());
-                    for(let j=0;j<de.i.length;j++) w += de.o[j].timestamp.toMillis() - de.i[j].timestamp.toMillis();
-                    const b = w - WORKDAY_MS; const adj = Math.abs(b)<TOLERANCE_THRESHOLD_MS ? 0 : b;
-                    bText = adj===0 ? '00:00' : formatMsAdmin(adj, true); bClass = adj===0 ? 'text-gray-800' : (adj>0?'text-green-600':'text-red-600'); moBalance+=adj;
-                } else if (de.i.length>de.o.length) { sText='Em andamento'; sColor='text-blue-500'; }
-                else if (isWorkday && dateObj<today.setHours(0,0,0,0) && de.i.length===0) { sText='Falta'; sColor='text-red-500'; bText='-06:00'; bClass='text-red-600'; moBalance-=WORKDAY_MS; }
-                else if (!isWorkday && de.i.length===0) { ins=[`<span class="text-gray-500">${dateObj.getDay()===0?'Domingo':'Sábado'}</span>`]; outs=[...ins]; }
-                else { const pd=reqs.find(r=>r.status==='pending'), rj=reqs.find(r=>r.status==='declined'); if(pd){sText='Pendente';sColor='text-yellow-500';}else if(rj){sText='Recusada';sColor='text-red-500';}else if(isWorkday && dateObj<today.setHours(0,0,0,0)){sText='Incompleto';sColor='text-orange-500';} }
+                const dateObj = parseDateFromPTBR(date); 
+                const isWorkday = dateObj.getDay() !== 0 && dateObj.getDay() !== 6;
+                let de = entriesByDay[date] || { i: [], o: [] }; 
+                let ins = de.i.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })); 
+                let outs = de.o.map(e => e.timestamp.toDate().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
                 
-                let icon = reqs.length>0 ? `<svg class="w-6 h-6 ${sColor||'text-yellow-500'}" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>` : `<svg class="w-6 h-6 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`;
-                const tr = document.createElement('tr'); tr.innerHTML = `<td class="px-6 py-4">${date}</td><td class="px-6 py-4">${ins.join(', ')}</td><td class="px-6 py-4">${outs.join(', ')}</td><td class="px-6 py-4 font-medium ${bClass}">${bText}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><button class="request-btn" data-date="${date}">${icon}</button><span class="text-xs font-medium ${sColor}">${sText}</span></div></td>`;
-                tr.querySelector('.request-btn').addEventListener('click', () => openRequestModal(date)); ui.historyTableBody.appendChild(tr);
+                let bText = '---', bClass = 'text-gray-500', sText = '', sColor = '';
+                const reqs = requests.filter(r => r.date === date); 
+                const apr = reqs.find(r => r.status === 'approved');
+                
+                if (apr) { 
+                    sText = 'Abonada'; 
+                    sColor = 'text-green-500'; 
+                    bText = '00:00'; 
+                    bClass = 'text-green-600'; 
+                } else if (de.i.length > 0 && de.i.length === de.o.length) {
+                    let w = 0; 
+                    de.i.sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis()); 
+                    de.o.sort((a,b) => a.timestamp.toMillis() - b.timestamp.toMillis());
+                    for (let j = 0; j < de.i.length; j++) {
+                        w += de.o[j].timestamp.toMillis() - de.i[j].timestamp.toMillis();
+                    }
+                    const b = w - WORKDAY_MS; 
+                    const adj = Math.abs(b) < TOLERANCE_THRESHOLD_MS ? 0 : b;
+                    bText = adj === 0 ? '00:00' : formatMsAdmin(adj, true); 
+                    bClass = adj === 0 ? 'text-gray-800' : (adj > 0 ? 'text-green-600' : 'text-red-600'); 
+                    moBalance += adj;
+                } else if (de.i.length > de.o.length) { 
+                    sText = 'Em andamento'; 
+                    sColor = 'text-blue-500'; 
+                } else if (isWorkday && dateObj < today.setHours(0,0,0,0) && de.i.length === 0) { 
+                    sText = 'Falta'; 
+                    sColor = 'text-red-500'; 
+                    bText = '-06:00'; 
+                    bClass = 'text-red-600'; 
+                    moBalance -= WORKDAY_MS; 
+                } else if (!isWorkday && de.i.length === 0) { 
+                    ins = [`<span class="text-gray-500">${dateObj.getDay() === 0 ? 'Domingo' : 'Sábado'}</span>`]; 
+                    outs = [...ins]; 
+                } else { 
+                    const pd = reqs.find(r => r.status === 'pending');
+                    const rj = reqs.find(r => r.status === 'declined'); 
+                    if (pd) {
+                        sText = 'Pendente';
+                        sColor = 'text-yellow-500';
+                    } else if (rj) {
+                        sText = 'Recusada';
+                        sColor = 'text-red-500';
+                    } else if (isWorkday && dateObj < today.setHours(0,0,0,0)) {
+                        sText = 'Incompleto';
+                        sColor = 'text-orange-500';
+                    } 
+                }
+                
+                let icon = reqs.length > 0 ? 
+                    `<svg class="w-6 h-6 ${sColor || 'text-yellow-500'}" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>` : 
+                    `<svg class="w-6 h-6 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`;
+                
+                const tr = document.createElement('tr'); 
+                tr.innerHTML = `<td class="px-6 py-4">${date}</td><td class="px-6 py-4">${ins.join(', ')}</td><td class="px-6 py-4">${outs.join(', ')}</td><td class="px-6 py-4 font-medium ${bClass}">${bText}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><button class="request-btn" data-date="${date}">${icon}</button><span class="text-xs font-medium ${sColor}">${sText}</span></div></td>`;
+                tr.querySelector('.request-btn').addEventListener('click', () => openRequestModal(date)); 
+                ui.historyTableBody.appendChild(tr);
             });
-            ui.noHistoryMessage.classList.toggle('hidden', allDays.length>0);
-            ui.accumulatedBalanceSpan.textContent = formatMsAdmin(moBalance, true); ui.accumulatedBalanceSpan.className = `text-3xl font-bold ${moBalance===0?'text-gray-800':(moBalance>0?'text-green-600':'text-red-600')}`;
+            
+            ui.noHistoryMessage.classList.toggle('hidden', allDays.length > 0);
+            ui.accumulatedBalanceSpan.textContent = formatMsAdmin(moBalance, true); 
+            ui.accumulatedBalanceSpan.className = `text-3xl font-bold ${moBalance === 0 ? 'text-gray-800' : (moBalance > 0 ? 'text-green-600' : 'text-red-600')}`;
         }
 
         function openRequestModal(date) {
-            currentRequestDate = date; ui.userRequest.text.value = ''; ui.userRequest.msg.textContent = '';
-            const reqs = allUserRequestsData.filter(r => r.date === date).sort((a,b)=>b.createdAt.toMillis()-a.createdAt.toMillis());
+            currentRequestDate = date; 
+            ui.userRequest.text.value = ''; 
+            ui.userRequest.select.value = '';
+            ui.userRequest.msg.textContent = '';
+            
+            const reqs = allUserRequestsData.filter(r => r.date === date).sort((a,b) => b.createdAt.toMillis() - a.createdAt.toMillis());
+            
             if (reqs.length > 0) {
-                ui.userRequest.title.textContent = `Solicitações para ${date}`; ui.userRequest.historyView.classList.remove('hidden'); ui.userRequest.formView.classList.add('hidden');
-                let html = '<div class="space-y-4">'; reqs.forEach(r => { const sc = r.status==='pending'?'bg-yellow-100 text-yellow-800':(r.status==='approved'?'bg-green-100 text-green-800':'bg-red-100 text-red-800'); const st = r.status==='pending'?'Pendente':(r.status==='approved'?'Aprovada':'Recusada'); html+=`<div class="p-3 bg-gray-50 border rounded-lg"><div class="flex justify-between mb-1"><span class="text-xs text-gray-500">${r.createdAt.toDate().toLocaleString('pt-BR')}</span><span class="text-xs font-medium px-2 py-1 rounded-full ${sc}">${st}</span></div><p class="text-sm">${r.text}</p></div>`; }); html+='</div>';
-                if(reqs[0].status!=='pending' && reqs[0].status!=='approved') html+=`<button id="new-req-btn" class="mt-6 w-full py-2 px-4 rounded text-white bg-blue-600 hover:bg-blue-700">Nova Solicitação</button>`;
-                ui.userRequest.historyView.innerHTML = html; const btn = document.getElementById('new-req-btn'); if(btn) btn.addEventListener('click', () => { ui.userRequest.historyView.classList.add('hidden'); ui.userRequest.formView.classList.remove('hidden'); ui.userRequest.title.textContent = `Nova Solicitação - ${date}`; });
-            } else { ui.userRequest.title.textContent = `Nova Solicitação para ${date}`; ui.userRequest.historyView.classList.add('hidden'); ui.userRequest.formView.classList.remove('hidden'); }
+                ui.userRequest.title.textContent = `Solicitações para ${date}`; 
+                ui.userRequest.historyView.classList.remove('hidden'); 
+                ui.userRequest.formView.classList.add('hidden');
+                
+                let html = '<div class="space-y-4">'; 
+                reqs.forEach(r => { 
+                    const sc = r.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : (r.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'); 
+                    const st = r.status === 'pending' ? 'Pendente' : (r.status === 'approved' ? 'Aprovada' : 'Recusada'); 
+                    html += `
+                        <div class="p-3 bg-gray-50 border rounded-lg">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-xs text-gray-500">${r.createdAt.toDate().toLocaleString('pt-BR')}</span>
+                                <span class="text-xs font-medium px-2 py-1 rounded-full ${sc}">${st}</span>
+                            </div>
+                            <p class="text-sm">${r.text}</p>
+                        </div>`; 
+                }); 
+                html += '</div>';
+                
+                if (reqs[0].status !== 'pending' && reqs[0].status !== 'approved') {
+                    html += `<button id="new-req-btn" class="mt-6 w-full py-2 px-4 rounded text-white bg-blue-600 hover:bg-blue-700">Nova Solicitação</button>`;
+                }
+                
+                ui.userRequest.historyView.innerHTML = html; 
+                const btn = document.getElementById('new-req-btn'); 
+                if (btn) {
+                    btn.addEventListener('click', () => { 
+                        ui.userRequest.historyView.classList.add('hidden'); 
+                        ui.userRequest.formView.classList.remove('hidden'); 
+                        ui.userRequest.title.textContent = `Nova Solicitação - ${date}`; 
+                    });
+                }
+            } else { 
+                ui.userRequest.title.textContent = `Nova Solicitação para ${date}`; 
+                ui.userRequest.historyView.classList.add('hidden'); 
+                ui.userRequest.formView.classList.remove('hidden'); 
+            }
             ui.userRequest.modal.style.display = 'flex';
         }
 
         ui.userRequest.form.addEventListener('submit', async (e) => {
-            e.preventDefault(); const user = auth.currentUser; if (!user || !currentRequestDate) return;
-            try { await addDoc(collection(db, `/artifacts/${appId}/requests`), { userId: user.uid, userName: ui.userUserName.textContent, date: currentRequestDate, text: ui.userRequest.text.value, status: 'pending', createdAt: Timestamp.now() }); ui.userRequest.msg.textContent = 'Enviada!'; ui.userRequest.msg.className = 'text-green-600 text-center text-sm mt-4'; setTimeout(()=>ui.userRequest.modal.style.display='none', 1000); } catch(err) { ui.userRequest.msg.textContent = 'Erro ao enviar.'; ui.userRequest.msg.className = 'text-red-600 text-center text-sm mt-4'; }
+            e.preventDefault(); 
+            const user = auth.currentUser; 
+            if (!user || !currentRequestDate) return;
+            
+            // Concatena o motivo selecionado (se houver) com o texto adicional
+            const selectedMotive = ui.userRequest.select.value;
+            const additionalText = ui.userRequest.text.value.trim();
+            let finalRequestText = additionalText;
+            
+            if (selectedMotive) {
+                finalRequestText = additionalText ? `${selectedMotive} - ${additionalText}` : selectedMotive;
+            }
+            
+            if (!finalRequestText) {
+                ui.userRequest.msg.textContent = 'Por favor, selecione um motivo ou escreva um detalhe.';
+                ui.userRequest.msg.className = 'text-red-600 text-center text-sm mt-4';
+                return;
+            }
+
+            try { 
+                await addDoc(collection(db, `/artifacts/${appId}/requests`), { 
+                    userId: user.uid, 
+                    userName: ui.userUserName.textContent, 
+                    date: currentRequestDate, 
+                    text: finalRequestText, 
+                    status: 'pending', 
+                    createdAt: Timestamp.now() 
+                }); 
+                ui.userRequest.msg.textContent = 'Enviada!'; 
+                ui.userRequest.msg.className = 'text-green-600 text-center text-sm mt-4'; 
+                setTimeout(() => ui.userRequest.modal.style.display = 'none', 1000); 
+            } catch(err) { 
+                ui.userRequest.msg.textContent = 'Erro ao enviar.'; 
+                ui.userRequest.msg.className = 'text-red-600 text-center text-sm mt-4'; 
+            }
         });
 
-        ui.clockInButton.addEventListener('click', () => { if(isIpAllowed && auth.currentUser) { ui.clockInButton.disabled=true; addDoc(collection(db, `/artifacts/${appId}/users/${auth.currentUser.uid}/time_entries`), { type: 'in', timestamp: Timestamp.now(), userId: auth.currentUser.uid }).catch(()=>ui.clockInButton.disabled=false); }});
-        ui.clockOutButton.addEventListener('click', () => { if(isIpAllowed && auth.currentUser) { ui.clockOutButton.disabled=true; addDoc(collection(db, `/artifacts/${appId}/users/${auth.currentUser.uid}/time_entries`), { type: 'out', timestamp: Timestamp.now(), userId: auth.currentUser.uid }).catch(()=>ui.clockOutButton.disabled=false); }});
+        ui.clockInButton.addEventListener('click', () => { 
+            if (isIpAllowed && auth.currentUser) { 
+                ui.clockInButton.disabled = true; 
+                addDoc(collection(db, `/artifacts/${appId}/users/${auth.currentUser.uid}/time_entries`), { 
+                    type: 'in', 
+                    timestamp: Timestamp.now(), 
+                    userId: auth.currentUser.uid 
+                }).catch(() => ui.clockInButton.disabled = false); 
+            }
+        });
         
+        ui.clockOutButton.addEventListener('click', () => { 
+            if (isIpAllowed && auth.currentUser) { 
+                ui.clockOutButton.disabled = true; 
+                addDoc(collection(db, `/artifacts/${appId}/users/${auth.currentUser.uid}/time_entries`), { 
+                    type: 'out', 
+                    timestamp: Timestamp.now(), 
+                    userId: auth.currentUser.uid 
+                }).catch(() => ui.clockOutButton.disabled = false); 
+            }
+        });
     </script>
 </body>
 </html>
